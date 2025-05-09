@@ -1,0 +1,5 @@
+- [ ] 将discriminator的输入改为连续时间的observations+actions
+- [ ] 添加encoder
+- [ ] 给PPO的actor和critic不同的观测空间
+- [ ] 力控改位置控制
+- [ ] 检查代码

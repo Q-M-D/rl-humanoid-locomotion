@@ -1,0 +1,14 @@
+sensor_pos:
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+  - [0.0, 0.0, 0.0]
+
+single_step_observation: 44
+observation_history_len: 5
+actions_dim: 12
+
+vx_lambda: 1.0
+vy_lambda: 0.5
+vz_lambda: 0.5
+wz_lambda: 0.1

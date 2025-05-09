@@ -1,0 +1,26 @@
+sensor_pos:
+  - [0.1, 0.038, -0.05]
+  - [0.03, 0.042, -0.05]
+  - [-0.02, 0.04, -0.05]
+  - [-0.05, 0.03, -0.05]
+  - [0.12, 0.0, -0.05]
+  - [0.052, 0.0, -0.05]
+  - [0.009, 0.0, -0.05]
+  - [-0.065, 0.0, -0.05]
+  - [0.1, -0.038, -0.05]
+  - [0.03, -0.042, -0.05]
+  - [-0.02, -0.04, -0.05]
+  - [-0.05, -0.03, -0.05]
+
+mjcf_folder: "/home/mmlab-rl/codes/sensorimotor-rl/model/mjcf"
+
+duration: 45.0
+timestep: 0.01
+
+camera:
+  follow_distance: 4.0
+  follow_elevation: -30
+  follow_azimuth: 135
+  fixed_distance: 5.0
+  fixed_elevation: -20
+  fixed_azimuth: 45
