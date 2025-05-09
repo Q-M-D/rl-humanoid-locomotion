@@ -1,4 +1,4 @@
-# 📄 Project Plan Document
+# Project Plan Document
 
 ## Project Title
 **Humanoid Robot Locomotion Control using Reinforcement Learning**
