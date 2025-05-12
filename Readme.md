@@ -79,3 +79,5 @@ Randomize physical parameters, sensor noise, and external disturbances during tr
 
 ---
 
+# Env setup
+You should run `pip install -e source/mcm_based_rl` first!
