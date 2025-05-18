@@ -7,45 +7,69 @@
 ---
 
 ## 1. Summary of Progress
-- Completed the initial implementation of the reward engine:
-  - Defined and implemented key reward components:
-    - **Forward Progress**: Rewards movement in the desired walking direction.
-    - **Energy Efficiency**: Penalizes high torque and joint velocities.
-    - **Stability**: Penalizes deviation of center of mass and falling.
-    - **Smoothness**: Penalizes abrupt joint motion changes.
-  - Integrated the reward engine into the training pipeline.
-  - Verified reward values through simulation rollouts and logging.
-- Refactored parts of the training loop to better accommodate modular reward design.
+- Completed robot locomotion implementation in the Isaac Gym simulation environment, including gait generation, joint control, and balance maintenance.  
+- Integrated gamepad control (e.g., Xbox controller) for interactive/manual driving of the robot.  
+- Designed and implemented a comprehensive reward engine consisting of 24 distinct reward components to guide the PPO training process.
 
 ---
 
 ## 2. Challenges Encountered
-- Designing reward weights to balance learning objectives required multiple iterations.
-- Ensuring reward signals were neither too sparse nor too noisy during testing.
-- Debugging reward behavior in edge cases (e.g., robot falling immediately on reset).
+- Tuning multiple reward components to produce smooth and stable walking behavior required extensive testing and adjustments.  
+- Ensuring the gamepad control inputs mapped intuitively to robot actions demanded refinement of input scaling and deadzone configurations.  
+- Debugging edge cases in simulation (e.g., foot clipping or unintended contacts) exposed subtle issues in the contact-handling reward terms.
 
 ---
 
-## 3. Plans for Next Week
-- Begin full training runs using the current PPO implementation and reward engine.
-- Monitor training stability and learning curves.
-- Visualize agent behavior and assess qualitative locomotion results.
-- Start preparing domain randomization code modules.
+## 3. Reward Function Overview
+
+| Reward Name               | Description                                                                                                         |
+|---------------------------|---------------------------------------------------------------------------------------------------------------------|
+| `joint_pos`               | Reward for closeness between current joint positions and target joint positions                                     |
+| `feet_distance`           | Penalizes feet being too close or too far apart                                                                      |
+| `knee_distance`           | Rewards maintaining a proper knee separation                                                                         |
+| `foot_slip`               | Penalizes horizontal slipping of feet in contact                                                                     |
+| `feet_air_time`           | Rewards longer foot air time to encourage larger step lengths                                                        |
+| `feet_contact_number`     | Rewards correct number of foot contacts according to gait phase                                                      |
+| `orientation`             | Rewards keeping the robot’s base orientation level                                                                  |
+| `feet_contact_forces`     | Penalizes excessive contact forces on feet                                                                           |
+| `default_joint_pos`       | Rewards joints close to default positions (focus on yaw and roll axes)                                              |
+| `base_height`             | Rewards base height remaining within desired range                                                                  |
+| `base_acc`                | Penalizes high base acceleration to encourage smooth motion                                                         |
+| `vel_mismatch_exp`        | Rewards small mismatches in linear and angular velocities                                                           |
+| `track_vel_hard`          | Rewards accurate tracking of commanded linear and angular velocities                                                |
+| `tracking_lin_vel`        | Rewards tracking of linear velocity commands                                                                        |
+| `tracking_ang_vel`        | Rewards tracking of angular (yaw) velocity commands                                                                 |
+| `feet_clearance`          | Rewards appropriate foot clearance during swing phase                                                               |
+| `low_speed`               | Rewards maintaining speed within desired range and penalizes direction mismatches                                   |
+| `torques`                 | Penalizes high joint torques to encourage energy-efficient movement                                                 |
+| `dof_vel`                 | Penalizes high joint velocities                                                                                     |
+| `dof_acc`                 | Penalizes high joint accelerations                                                                                  |
+| `collision`               | Penalizes collisions between designated body parts and environment                                                  |
+| `action_smoothness`       | Penalizes abrupt changes in actions to produce smoother motion                                                      |
 
 ---
 
-## 4. Current Risks / Concerns
-- Reward shaping still needs tuning to ensure convergence and meaningful gait.
-- Training speed may become a bottleneck once full training begins.
-- Robustness to sensor noise and external disturbances still untested.
+## 4. Plans for Next Week
+- Launch initial PPO training runs with the new reward engine.  
+- Monitor training performance (reward curves, gait stability) and log qualitative behavior.  
+- Adjust reward weights and hyperparameters based on observed training dynamics.  
+- Begin implementing domain randomization (mass, friction, sensor noise) to improve sim-to-real robustness.
 
 ---
 
-## 5. Contributions
-| Team Member | Contributions |
-| :---------- | :------------- |
-| Junlei Zhu  | Reward module design and implementation |
-| Jingwei Peng| Reward integration with PPO pipeline |
-| Yansong Bai | Testing and logging of reward values, feedback on shaping strategy |
+## 5. Current Risks / Concerns
+- The large number of reward components may introduce conflicting objectives, potentially slowing convergence.  
+- Gamepad control validation may not fully cover edge cases encountered during autonomous training.  
+- Training time could become a bottleneck; consider parallelizing environments or reducing model complexity if needed.
+
+---
+
+## 6. Contributions
+
+| Team Member | Contributions                                              |
+|:------------|:-----------------------------------------------------------|
+| Junlei Zhu  | Isaac Gym locomotion setup, reward engine core functions   |
+| Jingwei Peng| Gamepad control integration, simulation debugging          |
+| Yansong Bai | Reward weight tuning, logging and evaluation framework     |
 
 ---
