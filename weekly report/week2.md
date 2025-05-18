@@ -49,21 +49,18 @@
 
 ---
 
-## 4. Plans for Next Week
-- Launch initial PPO training runs with the new reward engine.  
-- Monitor training performance (reward curves, gait stability) and log qualitative behavior.  
-- Adjust reward weights and hyperparameters based on observed training dynamics.  
-- Begin implementing domain randomization (mass, friction, sensor noise) to improve sim-to-real robustness.
-
----
-
-## 5. Current Risks / Concerns
+## 4. Current Risks / Concerns
 - The large number of reward components may introduce conflicting objectives, potentially slowing convergence.  
 - Gamepad control validation may not fully cover edge cases encountered during autonomous training.  
 - Training time could become a bottleneck; consider parallelizing environments or reducing model complexity if needed.
 
 ---
+## 5. Plans for Next Week
+1. Fix bugs: address steering/turning issues.  
+2. Begin real-robot deployment tests on Dora2.  
+3. Develop and integrate a contact predictor module to better handle contact information.
 
+---
 ## 6. Contributions
 
 | Team Member | Contributions                                              |
