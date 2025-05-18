@@ -80,4 +80,14 @@ Randomize physical parameters, sensor noise, and external disturbances during tr
 ---
 
 # Env setup
-You should run `pip install -e source/mcm_based_rl` first!
+You should run `pip install -e .` first!
+
+# Training
+```bash
+python humanoid/scripts/train.py --task=humanoid_dora2 --run_name=v1
+```
+
+# Evaluation
+```bash
+python humanoid/scripts/play.py --task=humanoid_dora2 --run_name=v1
+```
