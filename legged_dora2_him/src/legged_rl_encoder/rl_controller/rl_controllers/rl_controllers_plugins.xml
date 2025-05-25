@@ -1,0 +1,24 @@
+<library path="lib/librl_controllers">
+
+    <class name="legged/AcController" type="legged::AcController"
+           base_class_type="controller_interface::ControllerBase">
+        <description>
+            The ac rl controller.
+        </description>
+    </class>
+
+    <class name="legged/StudentPolicyController" type="legged::StudentPolicyController"
+           base_class_type="controller_interface::ControllerBase">
+        <description>
+            The student policy controller.
+        </description>
+    </class>
+
+    <class name="legged/StudentStmController" type="legged::StudentStmController"
+           base_class_type="controller_interface::ControllerBase">
+        <description>
+            The student policy controller.
+        </description>
+    </class>
+    
+</library>

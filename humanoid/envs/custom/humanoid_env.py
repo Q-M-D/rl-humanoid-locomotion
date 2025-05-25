@@ -290,6 +290,12 @@ class XBotLFreeEnv(LeggedRobot):
         """
         joint_pos = self.dof_pos.clone()
         pos_target = self.ref_dof_pos.clone()
+        
+        # TODO: note this
+        # Check if all command inputs are small (no significant movement commands)
+        # if not torch.any(torch.abs(self.command_input[:, :3]) > 0.05):
+        #     pos_target = torch.zeros_like(pos_target)
+        
         diff = joint_pos - pos_target
         # 分别计算 roll 和 pitch 的误差
         roll_diff = diff[:, [0, 6]]  # 左右 hip_roll_joint
@@ -298,11 +304,12 @@ class XBotLFreeEnv(LeggedRobot):
         ankle_pitch_diff = diff[:, [4, 10]]  # 左右 ankle_pitch_joint
         ankle_roll_diff = diff[:, [5, 11]]  # 左右 ankle_roll_joint
 
-        # 计算各方向的误差
         total_diff = torch.cat((roll_diff, pitch_diff, knee_diff, ankle_pitch_diff, ankle_roll_diff), dim=1)
         r = torch.exp(-2 * torch.norm(total_diff, dim=1)) - 0.2 * torch.norm(total_diff, dim=1).clamp(0, 0.5)
         #r = torch.exp(-2 * torch.norm(diff, dim=1)) - 0.2 * torch.norm(diff, dim=1).clamp(0, 0.5)
         
+        if not torch.any(torch.abs(self.command_input[:, :3]) > 0.05):
+            r *= 3
         
         return r
 
@@ -312,9 +319,9 @@ class XBotLFreeEnv(LeggedRobot):
         """
         foot_pos = self.rigid_state[:, self.feet_indices, :2]
         foot_dist = torch.norm(foot_pos[:, 0, :] - foot_pos[:, 1, :], dim=1)
-        fd = self.cfg.rewards.min_dist
+        min_df = self.cfg.rewards.min_dist
         max_df = self.cfg.rewards.max_dist
-        d_min = torch.clamp(foot_dist - fd, -0.5, 0.)
+        d_min = torch.clamp(foot_dist - min_df, -0.5, 0.)
         d_max = torch.clamp(foot_dist - max_df, 0, 0.5)
         return (torch.exp(-torch.abs(d_min) * 100) + torch.exp(-torch.abs(d_max) * 100)) / 2
 
@@ -325,9 +332,9 @@ class XBotLFreeEnv(LeggedRobot):
         """
         foot_pos = self.rigid_state[:, self.knee_indices, :2]
         foot_dist = torch.norm(foot_pos[:, 0, :] - foot_pos[:, 1, :], dim=1)
-        fd = self.cfg.rewards.min_dist
+        min_df = self.cfg.rewards.min_dist
         max_df = self.cfg.rewards.max_dist / 2
-        d_min = torch.clamp(foot_dist - fd, -0.5, 0.)
+        d_min = torch.clamp(foot_dist - min_df, -0.5, 0.)
         d_max = torch.clamp(foot_dist - max_df, 0, 0.5)
         return (torch.exp(-torch.abs(d_min) * 120) + torch.exp(-torch.abs(d_max) * 100)) / 2
 
@@ -366,7 +373,24 @@ class XBotLFreeEnv(LeggedRobot):
         Rewards or penalizes depending on whether the foot contact matches the expected gait phase.
         """
         contact = self.contact_forces[:, self.feet_indices, 2] > 5.
-        stance_mask = self._get_gait_phase()
+        # Check if there are significant movement commands
+        has_significant_commands = torch.any(torch.abs(self.commands[:, :3]) > 0.05, dim=1, keepdim=True)
+        
+        # Get stance mask based on gait phase
+        gait_stance_mask = self._get_gait_phase()
+        
+        # For low commands, use default stance (both feet)
+        default_stance = torch.ones_like(contact)
+        
+        # Select appropriate stance mask based on command magnitude
+        stance_mask = torch.where(
+            has_significant_commands, 
+            gait_stance_mask,
+            default_stance
+        )
+        # TODO: pay attention to this
+        stance_mask = gait_stance_mask
+        
         reward = torch.where(contact == stance_mask, 1.0, -0.5)
         return torch.mean(reward, dim=1)
 
@@ -377,7 +401,7 @@ class XBotLFreeEnv(LeggedRobot):
         """
         quat_mismatch = torch.exp(-torch.sum(torch.abs(self.base_euler_xyz[:, :2]), dim=1) * 10)
         orientation = torch.exp(-torch.norm(self.projected_gravity[:, :2], dim=1) * 20)
-        return (quat_mismatch + orientation) / 2.
+        return (quat_mismatch + orientation) * 0.5 # Dr. Chen add this
 
     def _reward_feet_contact_forces(self):
         """
@@ -576,4 +600,3 @@ class XBotLFreeEnv(LeggedRobot):
             self.actions + self.last_last_actions - 2 * self.last_actions), dim=1)
         term_3 = 0.05 * torch.sum(torch.abs(self.actions), dim=1)
         return term_1 + term_2 + term_3
-

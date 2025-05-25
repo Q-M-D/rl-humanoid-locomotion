@@ -445,7 +445,7 @@ class Dora2Cfg(LeggedRobotCfg):
             dof_vel = -5e-4
             dof_acc = -1e-7
             collision = -1.
-            joint_pos = 1.2
+            joint_pos = 1.8
             
     class normalization:
         class obs_scales:
@@ -479,7 +479,8 @@ class Dora2CfgPPO(LeggedRobotCfgPPO):
         policy_class_name = 'ActorCritic'
         algorithm_class_name = 'PPO'
         num_steps_per_env = 60  # per iteration
-        max_iterations = 2000  # number of policy updates
+        # max_iterations = 2000  # number of policy updates
+        max_iterations = 10001  # number of policy updates
 
         # logging
         save_interval = 100  # Please check for potential savings every `save_interval` iterations.

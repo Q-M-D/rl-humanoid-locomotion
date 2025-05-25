@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+
+<launch>
+    
+    <node pkg="rosbag" type="record" 
+            name="bag_record" 
+            args="
+            /data_analysis/real_joint_pos
+            /data_analysis/real_joint_vel
+            /data_analysis/real_torque
+            /data_analysis/rl_planned_joint_pos
+            /data_analysis/rl_planned_joint_vel
+            /data_analysis/rl_planned_torque
+            -o $(find rl_controllers)/data/data"/>
+</launch>

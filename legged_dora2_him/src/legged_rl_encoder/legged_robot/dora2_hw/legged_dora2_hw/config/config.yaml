@@ -1,0 +1,10 @@
+__collection-name__: dora2_user_parameters
+
+MainThreadPeriod: 0.001
+Kp: 30
+Kd: 0.5
+NonZeroAngle: 50
+TorCmdValue: 2
+InerpolateTime: 10
+TorExecTime: 10
+

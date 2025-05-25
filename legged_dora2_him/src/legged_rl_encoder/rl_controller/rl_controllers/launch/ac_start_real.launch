@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+
+<launch>
+    <arg name="robot_type" default="$(env ROBOT_TYPE)" doc="Robot type: [lt, go1]"/>
+    <arg name="rviz" default="true"/>
+    <arg name="urdfFile"          default="$(find legged_dora2_description)/urdf/dora2.urdf"/>
+    <arg name="description_name"   default="legged_robot_description"/>
+    <arg name="record_data" default="false"/>
+    <param name="robot_description" textfile="$(find legged_dora2_description)/urdf/dora2.urdf" />
+
+    <group if="$(eval robot_type=='dora2')">
+        <include file="$(find legged_dora2_hw)/launch/legged_dora2_hw.launch"/>
+    </group>
+
+    <group if="$(arg rviz)">
+        <param name="$(arg description_name)" textfile="$(arg urdfFile)"/>
+        <arg name="rvizconfig" default="$(find rl_controllers)/rviz/legged_robot.rviz" />
+        <node pkg="rviz" type="rviz" name="rviz" args="-d $(arg rvizconfig)" output="screen" />
+      </group>
+
+      <group if="$(arg record_data)">
+        <include file="$(find rl_controllers)/launch/record_data.launch"/>
+    </group>
+
+    <include file="$(find rl_controllers)/launch/load_ac_controller.launch"/>
+
+</launch>

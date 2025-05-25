@@ -1,0 +1,1 @@
+rm -rf build devel logs .catkin_tools

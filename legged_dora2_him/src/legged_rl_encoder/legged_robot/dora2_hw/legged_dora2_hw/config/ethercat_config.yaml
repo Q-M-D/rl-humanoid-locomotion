@@ -1,0 +1,16 @@
+net_card: enx207bd2d4eedd
+ctr_freq: 1000
+robot_type: 1
+node_motor_num: [4, 4, 5, 5]
+motor_max_torque: [30, 90, 150]
+motor_min_torque: [-30, -90, -150]
+motor_max_current: [30, 60, 70]
+motor_min_current: [-30, -60, -70]
+right_arm_motor_type: [0, 0, 0, 0]
+left_arm_motor_type: [0, 0, 0, 0]
+right_leg_motor_type: [1, 1, 2, 2, 0, 0]
+left_leg_motor_type: [1, 1, 2, 2, 0, 0]
+right_leg_motor_dir: [1, 1, 1, 1, 1, 1]
+left_leg_motor_dir: [1, 1, 1, 1, 1, 1]
+right_arm_motor_dir: [1, 1, 1, 1]
+left_arm_motor_dir: [1, 1, 1, 1]

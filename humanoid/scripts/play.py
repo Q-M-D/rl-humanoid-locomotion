@@ -37,7 +37,7 @@ from humanoid import LEGGED_GYM_ROOT_DIR
 
 # import isaacgym
 from humanoid.envs import *
-from humanoid.utils import  get_args, export_policy_as_jit, task_registry, Logger
+from humanoid.utils import  get_args, export_policy_as_jit, task_registry, Logger, export_policy_as_onnx
 from isaacgym.torch_utils import *
 
 import torch
@@ -85,6 +85,8 @@ def play(args):
         path = os.path.join(LEGGED_GYM_ROOT_DIR, 'logs', train_cfg.runner.experiment_name, 'exported', 'policies')
         export_policy_as_jit(ppo_runner.alg.actor_critic, path)
         print('Exported policy as jit script to: ', path)
+        export_policy_as_onnx(ppo_runner.alg.actor_critic, path, ppo_runner.env.num_obs)
+        print('Exported policy as onnx to: ', path)
     
     joystick = joy.setup_joystick()
     if joystick is None:
@@ -109,8 +111,8 @@ def play(args):
             command = joy.get_joystick_command(joystick)
             env.commands[:, 0] = command[0].item()
             env.commands[:, 1] = command[1].item()
-            env.commands[:, 2] = command[2].item()
-            env.commands[:, 3] = 0.
+            env.commands[:, 2] = 0.0
+            env.commands[:, 3] = command[2].item()
         
         obs, critic_obs, rews, dones, infos = env.step(actions.detach())
         

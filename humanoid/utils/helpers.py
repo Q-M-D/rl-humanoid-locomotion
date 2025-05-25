@@ -247,7 +247,17 @@ def get_args():
 
 def export_policy_as_jit(actor_critic, path):
     os.makedirs(path, exist_ok=True)
-    path = os.path.join(path, "policy_1.pt")
+    path = os.path.join(path, "policy.pt")
     model = copy.deepcopy(actor_critic.actor).to("cpu")
     traced_script_module = torch.jit.script(model)
     traced_script_module.save(path)
+
+def export_policy_as_onnx(actor_critic, path, obs_dim):
+    os.makedirs(path, exist_ok=True)
+    path = os.path.join(path, "policy.onnx")
+    model = copy.deepcopy(actor_critic.actor).to("cpu")
+    dummy_input = torch.randn(1, obs_dim).to("cpu")
+    torch.onnx.export(model, dummy_input, path, export_params=True,
+                      opset_version=11, do_constant_folding=True,
+                      input_names=['input'], output_names=['output'],
+                      )

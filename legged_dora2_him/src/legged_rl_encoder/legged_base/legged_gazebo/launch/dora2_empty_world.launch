@@ -1,0 +1,20 @@
+<launch>
+    <!-- Assume your URDF file is directly located at the specified path -->
+    <arg name="robot_type" default="$(env ROBOT_TYPE)" doc="Robot type: [dora2]"/>
+
+    <param name="legged_robot_description" textfile="$(find legged_dora2_description)/urdf/dora2.urdf"/>
+
+    <node name="generate_urdf" pkg="legged_common" type="generate_urdf.sh" output="screen"
+          args="$(find legged_dora2_description)/urdf/dora2.urdf $(arg robot_type)"/>
+
+    <rosparam file="$(find legged_gazebo)/config/default.yaml" command="load"/>
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <!-- <arg name="debug" default="true"/> -->
+        <arg name="world_name" value="$(find legged_gazebo)/worlds/empty_world.world"/>
+    </include>
+
+    <!-- push robot_description to factory and spawn robot in gazebo -->
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" clear_params="true"
+          args="-z 0.73 -param legged_robot_description -urdf -model dora2" output="screen"/>
+
+</launch>

@@ -1,0 +1,1545 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by
+Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="dora2">
+
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="liblegged_hw_sim.so">
+      <robotNamespace>/</robotNamespace>
+      <robotParam>legged_robot_description</robotParam>
+      <robotSimType>legged_gazebo/LeggedHWSim</robotSimType>
+    </plugin>
+  </gazebo>
+
+
+  <gazebo>
+    <plugin filename="libgazebo_ros_p3d.so" name="p3d_base_controller">
+      <alwaysOn>true</alwaysOn>
+      <updateRate>1000.0</updateRate>
+      <bodyName>base_link</bodyName>
+      <topicName>ground_truth/state</topicName>
+      <gaussianNoise>0</gaussianNoise>
+      <frameName>world</frameName>
+      <xyzOffsets>0 0 0</xyzOffsets>
+      <rpyOffsets>0 0 0</rpyOffsets>
+    </plugin>
+  </gazebo>
+
+
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.024171 -1.7516E-05 0.054338"
+        rpy="0 0 0" />
+      <mass
+        value="9.5286" />
+      <inertia
+        ixx="0.032196"
+        ixy="-8.9874E-07"
+        ixz="5.5067E-06"
+        iyy="0.022776"
+        iyz="1.4889E-06"
+        izz="0.020896" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//base_link.STL" />
+      </geometry>
+    </collision> -->
+    <collision>
+      <origin xyz="-0.01 0 -0.006" rpy="0 0 0" />
+      <geometry>
+        <box size="0.184 0.15 0.2" />
+        <!--宽 长 高!-->
+      </geometry>
+  </collision>
+  </link>
+  
+    <joint name="base_imu_joint" type="fixed">
+    <origin rpy="0. 0. 0." xyz="0. 0. 0" />
+    <parent link="base_link" />
+    <child link="base_imu" />
+  </joint>
+  <!-- Imu link -->
+  <link name="base_imu">
+    <inertial>
+      <mass value="0.01" />
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <inertia ixx="0.000001" ixy="0" ixz="0" iyy="0.000001" iyz="0" izz="0.000001" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <box size="0.015 0.015 0.004" />
+      </geometry>
+    </visual>
+    <material name="orange">
+      <color rgba="255 108 10 255" />
+    </material>
+  </link>
+  <gazebo reference="base_imu_joint">
+    <disableFixedJointLumping>true</disableFixedJointLumping>
+  </gazebo>
+
+  <!-- ************************************************************ -->
+  <!-- ************************ Arm ************************** -->
+  <!-- ************************************************************ -->
+
+  <link
+    name="l_arm_shoulder_pitch_Link">
+    <inertial>
+      <origin
+        xyz="-0.0032277 -0.00092897 0.074793"
+        rpy="0 0 0" />
+      <mass
+        value="0.47485" />
+      <inertia
+        ixx="0.00026491"
+        ixy="-1.4793E-06"
+        ixz="-1.3794E-05"
+        iyy="0.00023144"
+        iyz="-4.4615E-06"
+        izz="0.00018088" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_arm_shoulder_pitch_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_arm_shoulder_pitch_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="l_arm_shoulder_pitch_joint"
+    type="fixed">
+    <origin
+      xyz="0 0.15525 0.19801"
+      rpy="-1.2217 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="l_arm_shoulder_pitch_Link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2"
+      upper="2"
+      effort="100"
+      velocity="12" />
+  </joint>
+  <link
+    name="l_arm_shoulder_roll_Link">
+    <inertial>
+      <origin
+        xyz="0.0040791 -0.00022762 -0.069389"
+        rpy="0 0 0" />
+      <mass
+        value="0.35558" />
+      <inertia
+        ixx="0.00019455"
+        ixy="-1.5603E-06"
+        ixz="-2.634E-05"
+        iyy="0.0001985"
+        iyz="-3.0398E-06"
+        izz="0.00015856" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_arm_shoulder_roll_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_arm_shoulder_roll_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="l_arm_shoulder_roll_joint"
+    type="fixed">
+    <origin
+      xyz="0 0 0.087"
+      rpy="1.2217 0 0" />
+    <parent
+      link="l_arm_shoulder_pitch_Link" />
+    <child
+      link="l_arm_shoulder_roll_Link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="0"
+      upper="3"
+      effort="100"
+      velocity="12" />
+  </joint>
+  <link
+    name="l_arm_shoulder_yaw_Link">
+    <inertial>
+      <origin
+        xyz="-4.0328E-05 0.0024581 -0.1084"
+        rpy="0 0 0" />
+      <mass
+        value="0.38568" />
+      <inertia
+        ixx="0.00014077"
+        ixy="4.7706E-08"
+        ixz="-6.5763E-07"
+        iyy="0.00017046"
+        iyz="4.8314E-06"
+        izz="0.00012696" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_arm_shoulder_yaw_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_arm_shoulder_yaw_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="l_arm_shoulder_yaw_joint"
+    type="fixed">
+    <origin
+      xyz="0 0 -0.096"
+      rpy="0 0 0" />
+    <parent
+      link="l_arm_shoulder_roll_Link" />
+    <child
+      link="l_arm_shoulder_yaw_Link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2"
+      upper="2"
+      effort="100"
+      velocity="12" />
+  </joint>
+  
+  <link
+    name="l_arm_elbow_Link">
+    <inertial>
+      <origin
+        xyz="0.0017264 -0.0016939 -0.00041331"
+        rpy="0 0 0" />
+      <mass
+        value="0.023469" />
+      <inertia
+        ixx="4.6934E-06"
+        ixy="-1.9996E-09"
+        ixz="9.8792E-08"
+        iyy="9.0784E-06"
+        iyz="4.7874E-10"
+        izz="5.0824E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_arm_elbow_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_arm_elbow_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="l_arm_elbow_joint"
+    type="fixed">
+    <origin
+      xyz="-0.00094247 -0.022423 -0.13052"
+      rpy="0 0 0" />
+    <parent
+      link="l_arm_shoulder_yaw_Link" />
+    <child
+      link="l_arm_elbow_Link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="100"
+      velocity="12" />
+  </joint>
+  <link
+    name="r_arm_shoulder_pitch_Link">
+    <inertial>
+      <origin
+        xyz="-0.0032277 0.00092897 0.074793"
+        rpy="0 0 0" />
+      <mass
+        value="0.47485" />
+      <inertia
+        ixx="0.00026491"
+        ixy="1.4793E-06"
+        ixz="-1.3794E-05"
+        iyy="0.00023144"
+        iyz="4.4615E-06"
+        izz="0.00018088" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_arm_shoulder_pitch_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_arm_shoulder_pitch_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="r_arm_shoulder_pitch_joint"
+    type="fixed">
+    <origin
+      xyz="0 -0.15525 0.19801"
+      rpy="1.2217 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="r_arm_shoulder_pitch_Link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2"
+      upper="2"
+      effort="100"
+      velocity="12" />
+  </joint>
+  <link
+    name="r_arm_shoulder_roll_Link">
+    <inertial>
+      <origin
+        xyz="0.0040791 0.00022751 -0.069389"
+        rpy="0 0 0" />
+      <mass
+        value="0.35558" />
+      <inertia
+        ixx="0.00019455"
+        ixy="1.5594E-06"
+        ixz="-2.634E-05"
+        iyy="0.0001985"
+        iyz="3.0394E-06"
+        izz="0.00015856" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_arm_shoulder_roll_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.78039 0.97255 0.95686 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_arm_shoulder_roll_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="r_arm_shoulder_roll_joint"
+    type="fixed">
+    <origin
+      xyz="0 0 0.087"
+      rpy="-1.2217 0 0" />
+    <parent
+      link="r_arm_shoulder_pitch_Link" />
+    <child
+      link="r_arm_shoulder_roll_Link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-3"
+      upper="0"
+      effort="100"
+      velocity="12" />
+  </joint>
+  <link
+    name="r_arm_shoulder_yaw_Link">
+    <inertial>
+      <origin
+        xyz="-4.033E-05 -0.0024581 -0.1084"
+        rpy="0 0 0" />
+      <mass
+        value="0.38568" />
+      <inertia
+        ixx="0.00014077"
+        ixy="-4.771E-08"
+        ixz="-6.5762E-07"
+        iyy="0.00017046"
+        iyz="-4.8314E-06"
+        izz="0.00012696" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_arm_shoulder_yaw_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 0.90588 0 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_arm_shoulder_yaw_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="r_arm_shoulder_yaw_joint"
+    type="fixed">
+    <origin
+      xyz="0 0 -0.096"
+      rpy="0 0 0" />
+    <parent
+      link="r_arm_shoulder_roll_Link" />
+    <child
+      link="r_arm_shoulder_yaw_Link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-2"
+      upper="2"
+      effort="100"
+      velocity="12" />
+  </joint>
+  <link
+    name="r_arm_elbow_Link">
+    <inertial>
+      <origin
+        xyz="0.0017264 0.0016939 -0.00041331"
+        rpy="0 0 0" />
+      <mass
+        value="0.023469" />
+      <inertia
+        ixx="4.6934E-06"
+        ixy="1.9996E-09"
+        ixz="9.8792E-08"
+        iyy="9.0784E-06"
+        iyz="-4.7874E-10"
+        izz="5.0824E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_arm_elbow_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.97255 0.9451 0.78039 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_arm_elbow_Link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="r_arm_elbow_joint"
+    type="fixed">
+    <origin
+      xyz="-0.00094247 0.022423 -0.13052"
+      rpy="0 0 0" />
+    <parent
+      link="r_arm_shoulder_yaw_Link" />
+    <child
+      link="r_arm_elbow_Link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1.5"
+      upper="1.5"
+      effort="100"
+      velocity="12" />
+  </joint>
+  <!-- ************************************************************ -->
+  <!-- ************************ Left Leg ************************** -->
+  <!-- ************************************************************ -->
+
+  <!-- ************* part 1 *************** -->
+
+  <link
+    name="leg_l1_link">
+    <inertial>
+      <origin
+        xyz="0.066408 0.00011687 -0.0088543"
+        rpy="0 0 0" />
+      <mass
+        value="1.5082" />
+      <inertia
+        ixx="0.0011908"
+        ixy="-3.3498E-06"
+        ixz="4.2633E-06"
+        iyy="0.0013986"
+        iyz="2.2449E-07"
+        izz="0.0021692" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_hip_roll_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_hip_roll_Link.STL" />
+      </geometry>
+    </collision> -->
+
+  </link>
+  <joint
+    name="leg_l1_joint"
+    type="revolute">
+    <origin
+      xyz="-0.063645 0.08002 -0.085"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="leg_l1_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-0.3"
+      upper="1"
+      effort="40"
+      velocity="12" />
+  </joint>
+    <!-- ************* part 2 *************** -->
+  <link
+    name="leg_l2_link">
+    <inertial>
+      <origin
+        xyz="0.0019732 -0.024165 -0.078519"
+        rpy="0 0 0" />
+      <mass
+        value="1.8779" />
+      <inertia
+        ixx="0.0023693"
+        ixy="-3.2456E-06"
+        ixz="3.7313E-05"
+        iyy="0.0041966"
+        iyz="-2.5204E-07"
+        izz="0.00204" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_hip_yaw_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_hip_yaw_Link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="leg_l2_joint"
+    type="revolute">
+    <origin
+      xyz="0.067223 0 -0.042232"
+      rpy="0 0 0" />
+    <parent
+      link="leg_l1_link" />
+    <child
+      link="leg_l2_link" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+      lower="-0.75"
+      upper="1.5"
+      effort="40"
+      velocity="12" />
+  </joint>
+  <!-- ************* part 3 *************** -->
+  <link
+    name="leg_l3_link">
+    <inertial>
+      <origin
+        xyz="0.028966 0.049321 -0.042551"
+        rpy="0 0 0" />
+      <mass
+        value="2.8769" />
+      <inertia
+        ixx="0.010427"
+        ixy="-0.00011075"
+        ixz="0.004658"
+        iyy="0.015451"
+        iyz="0.00016996"
+        izz="0.0053754" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_hip_pitch_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_hip_pitch_Link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="leg_l3_joint"
+    type="revolute">
+    <origin
+      xyz="0.00092215 0 -0.082268"
+      rpy="0 0 0" />
+    <parent
+      link="leg_l2_link" />
+    <child
+      link="leg_l3_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1"
+      upper="2"
+      effort="120"
+      velocity="12" />
+  </joint>
+    <!-- ************* part 4 *************** -->
+  <link
+    name="leg_l4_link">
+    <inertial>
+      <origin
+        xyz="-0.062805 0.0021858 -0.11405"
+        rpy="0 0 0" />
+      <mass
+        value="1.3648" />
+      <inertia
+        ixx="0.0017855"
+        ixy="-2.4917E-05"
+        ixz="-0.00078477"
+        iyy="0.0022455"
+        iyz="-3.8407E-05"
+        izz="0.00093102" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_knee_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_knee_Link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="leg_l4_joint"
+    type="revolute">
+    <origin
+      xyz="0.135 0.031659 -0.23383"
+      rpy="0 0 0" />
+    <parent
+      link="leg_l3_link" />
+    <child
+      link="leg_l4_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1"
+      upper="1"
+      effort="120"
+      velocity="12" />
+  </joint>
+    <!-- ************* part 5 *************** -->
+  <link
+    name="leg_l5_link">
+    <inertial>
+      <origin
+        xyz="0.0010416 5.6983E-09 -9.7094E-10"
+        rpy="0 0 0" />
+      <mass
+        value="0.089954" />
+      <inertia
+        ixx="1.1624E-05"
+        ixy="6.8819E-12"
+        ixz="-6.205E-13"
+        iyy="1.4297E-05"
+        iyz="7.1487E-13"
+        izz="2.1929E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_ankle_pitch_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_ankle_pitch_Link.STL" />
+      </geometry>
+    </collision> -->
+    
+  </link>
+  <joint
+    name="leg_l5_joint"
+    type="revolute">
+    <origin
+      xyz="-0.14 0 -0.24249"
+      rpy="0 0 0" />
+    <parent
+      link="leg_l4_link" />
+    <child
+      link="leg_l5_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-0.3"
+      upper="1.3"
+      effort="27"
+      velocity="12" />
+  </joint>
+    <!-- ************* part 6 *************** -->
+  <link
+    name="leg_l6_link">
+    <inertial>
+      <origin
+        xyz="0.014545 1.9465E-05 -0.032656"
+        rpy="0 0 0" />
+      <mass
+        value="0.56965" />
+      <inertia
+        ixx="0.00023738"
+        ixy="-9.8899E-08"
+        ixz="1.9938E-05"
+        iyy="0.001026"
+        iyz="4.7675E-08"
+        izz="0.0012282" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_ankle_roll_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//l_leg_ankle_roll_Link.STL" />
+      </geometry>
+    </collision>
+    <!-- <collision>
+      <origin xyz="0.01603 0.0136 -0.0202" rpy="1.57 0 0" />
+      <geometry>
+        <box size="0.1801 0.0245 0.07" />
+      </geometry>
+
+    </collision> -->
+    
+  </link>
+  <joint
+    name="leg_l6_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="leg_l5_link" />
+    <child
+      link="leg_l6_link" />
+    <axis
+      xyz="-1 0 0" />
+    <limit
+      lower="-0.5"
+      upper="0.5"
+      effort="27"
+      velocity="12" />
+  </joint>
+
+  <!-- ************* gazebo*************** -->
+  <gazebo reference="leg_l1_link">
+    <mu1>0.6</mu1>
+    <mu2>0.6</mu2>
+    <self_collide>1</self_collide>
+  </gazebo>
+  <gazebo reference="leg_l2_link">
+    <mu1>0.6</mu1>
+    <mu2>0.6</mu2>
+    <self_collide>1</self_collide>
+  </gazebo>
+  <gazebo reference="leg_l3_link">
+    <mu1>0.6</mu1>
+    <mu2>0.6</mu2>
+    <self_collide>1</self_collide>
+  </gazebo>
+  <gazebo reference="leg_l4_link">
+    <mu1>0.6</mu1>
+    <mu2>0.6</mu2>
+    <self_collide>1</self_collide>
+  </gazebo>
+  <gazebo reference="leg_l5_link">
+    <mu1>1.6</mu1>
+    <mu2>1.6</mu2>
+    <self_collide>0</self_collide>
+    <kp value="1000000.0" />
+    <kd value="100.0" />
+    <maxVel>1.0</maxVel>
+    <minDepth>0.00</minDepth>
+  </gazebo>
+  <gazebo reference="leg_l6_link">
+    <mu1>1.6</mu1>
+    <mu2>1.6</mu2>
+    <self_collide>0</self_collide>
+    <kp value="1000000.0" />
+    <kd value="100.0" />
+    <maxVel>1.0</maxVel>
+    <minDepth>0.00</minDepth>
+  </gazebo>
+
+  <transmission name="leg_l1_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_l1_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_l1_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>40.0</maxEffort>
+    </actuator>
+  </transmission>
+  <transmission name="leg_l2_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_l2_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_l2_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>40.0</maxEffort>
+    </actuator>
+  </transmission>
+  <transmission name="leg_l3_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_l3_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_l3_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>120.0</maxEffort>
+    </actuator>
+  </transmission>
+
+  <transmission name="leg_l4_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_l4_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_l4_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>120.0</maxEffort>
+    </actuator>
+  </transmission>
+
+  <transmission name="leg_l5_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_l5_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_l5_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>27.0</maxEffort>
+    </actuator>
+  </transmission>
+
+  <transmission name="leg_l6_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_l6_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_l6_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>27.0</maxEffort>
+    </actuator>
+  </transmission>
+
+  <!-- ************************************************************ -->
+  <!-- ************************ Right Leg ************************** -->
+  <!-- ************************************************************ -->
+
+  <!-- ************* part 1 *************** -->
+
+  <link
+    name="leg_r1_link">
+    <inertial>
+      <origin
+        xyz="0.066408 -0.00011687 -0.0088543"
+        rpy="0 0 0" />
+      <mass
+        value="1.5082" />
+      <inertia
+        ixx="0.0011908"
+        ixy="-3.3498E-06"
+        ixz="4.2633E-06"
+        iyy="0.0013986"
+        iyz="2.2449E-07"
+        izz="0.0021692" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_hip_roll_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_hip_roll_Link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="leg_r1_joint"
+    type="revolute">
+    <origin
+      xyz="-0.063645 -0.07998 -0.085"
+      rpy="0 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="leg_r1_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-1"
+      upper="0.3"
+      effort="40"
+      velocity="12" />
+  </joint>
+    <!-- ************* part 1 *************** -->
+  <link
+    name="leg_r2_link">
+    <inertial>
+      <origin
+        xyz="9.3637E-05 0.024165 -0.078519"
+        rpy="0 0 0" />
+      <mass
+        value="1.8779" />
+      <inertia
+        ixx="0.0023693"
+        ixy="-2.2707E-06"
+        ixz="-8.9608E-06"
+        iyy="0.0041966"
+        iyz="2.519E-07"
+        izz="0.00204" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_hip_yaw_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.89804 0.91765 0.92941 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_hip_yaw_Link.STL" scale="1 1 1"/>
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="leg_r2_joint"
+    type="revolute">
+    <origin
+      xyz="0.067223 0 -0.042232"
+      rpy="0 0 0" />
+    <parent
+      link="leg_r1_link" />
+    <child
+      link="leg_r2_link" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+      lower="-0.75"
+      upper="1.5"
+      effort="40"
+      velocity="12" />
+  </joint>
+  <!-- ************* part 3 *************** -->
+  <link
+    name="leg_r3_link">
+    <inertial>
+      <origin
+        xyz="0.0289659332494124 -0.0493624462003201 -0.0425504801316415"
+        rpy="0 0 0" />
+      <mass
+        value="2.87689558271487" />
+      <inertia
+        ixx="0.0104274215065824"
+        ixy="0.000110754319597035"
+        ixz="0.0046580271778394"
+        iyy="0.0154507493796911"
+        iyz="-0.000169961547232438"
+        izz="0.00537542834292078" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_hip_pitch_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_hip_pitch_Link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="leg_r3_joint"
+    type="revolute">
+    <origin
+      xyz="0.00092215 0 -0.082268"
+      rpy="0 0 0" />
+    <parent
+      link="leg_r2_link" />
+    <child
+      link="leg_r3_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1"
+      upper="2"
+      effort="120"
+      velocity="12" />
+  </joint>
+    <!-- ************* part 4 *************** -->
+  <link
+    name="leg_r4_link">
+    <inertial>
+      <origin
+        xyz="-0.0628049707427374 -0.00218598621329957 -0.114047081347104"
+        rpy="0 0 0" />
+      <mass
+        value="1.36484274390751" />
+      <inertia
+        ixx="0.00178549235327099"
+        ixy="2.49167269720827E-05"
+        ixz="-0.000784766655762017"
+        iyy="0.00224554335848119"
+        iyz="3.84074965821491E-05"
+        izz="0.000931013568656943" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_knee_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_knee_Link.STL" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="leg_r4_joint"
+    type="revolute">
+    <origin
+      xyz="0.135 -0.0317 -0.23383"
+      rpy="0 0 0" />
+    <parent
+      link="leg_r3_link" />
+    <child
+      link="leg_r4_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-1"
+      upper="1"
+      effort="120"
+      velocity="12" />
+  </joint>
+    <!-- ************* part 5 *************** -->
+
+  <link
+    name="leg_r5_link">
+    <inertial>
+      <origin
+        xyz="0.00104160576000634 -5.47237166692582E-09 -9.74228364647445E-10"
+        rpy="0 0 0" />
+      <mass
+        value="0.0899541151447192" />
+      <inertia
+        ixx="1.16237302815817E-05"
+        ixy="-6.88186277044652E-12"
+        ixz="-6.20500506729925E-13"
+        iyy="1.42974136786799E-05"
+        iyz="-7.15142127832304E-13"
+        izz="2.19294687658168E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_ankle_pitch_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.647058823529412 0.619607843137255 0.588235294117647 1" />
+      </material>
+    </visual>
+    <!-- <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_ankle_pitch_Link.STL" />
+      </geometry>
+    </collision> -->
+
+  </link>
+  <joint
+    name="leg_r5_joint"
+    type="revolute">
+    <origin
+      xyz="-0.14 0 -0.24249"
+      rpy="0 0 0" />
+    <parent
+      link="leg_r4_link" />
+    <child
+      link="leg_r5_link" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-0.3"
+      upper="1.3"
+      effort="27"
+      velocity="12" />
+  </joint>
+    <!-- ************* part 6 *************** -->
+  <link
+    name="leg_r6_link">
+    <inertial>
+      <origin
+        xyz="0.0145452454243069 -1.9469217240109E-05 -0.0326555871129115"
+        rpy="0 0 0" />
+      <mass
+        value="0.569653325158856" />
+      <inertia
+        ixx="0.000237377996597009"
+        ixy="9.87698031151659E-08"
+        ixz="1.99382881697238E-05"
+        iyy="0.00102597183288951"
+        iyz="-4.76997686505092E-08"
+        izz="0.00122822316457505" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_ankle_roll_Link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.898039215686275 0.917647058823529 0.929411764705882 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+           filename="package://legged_dora2_description//meshes//r_leg_ankle_roll_Link.STL" />
+      </geometry>
+    </collision>
+      <!-- <collision>
+      <origin xyz="0.01603 -0.0136 -0.0202" rpy="1.57 0 0" />
+      <geometry>
+        <box size="0.1801 0.0245 0.07" />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint
+    name="leg_r6_joint"
+    type="revolute">
+    <origin
+      xyz="0 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="leg_r5_link" />
+    <child
+      link="leg_r6_link" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-0.5"
+      upper="0.5"
+      effort="27"
+      velocity="12" />
+  </joint>
+
+ <gazebo reference="leg_r1_link">
+    <mu1>0.6</mu1>
+    <mu2>0.6</mu2>
+    <self_collide>1</self_collide>
+  </gazebo>
+  <gazebo reference="leg_r2_link">
+    <mu1>0.6</mu1>
+    <mu2>0.6</mu2>
+    <self_collide>1</self_collide>
+  </gazebo>
+  <gazebo reference="leg_r3_link">
+    <mu1>0.6</mu1>
+    <mu2>0.6</mu2>
+    <self_collide>1</self_collide>
+  </gazebo>
+  <gazebo reference="leg_r4_link">
+    <mu1>0.6</mu1>
+    <mu2>0.6</mu2>
+    <self_collide>1</self_collide>
+  </gazebo>
+  <gazebo reference="leg_r5_link">
+    <mu1>1.6</mu1>
+    <mu2>1.6</mu2>
+    <self_collide>0</self_collide>
+    <kp value="1000000.0" />
+    <kd value="100.0" />
+    <maxVel>1.0</maxVel>
+    <minDepth>0.00</minDepth>
+  </gazebo>
+
+  <gazebo reference="leg_r6_link">
+    <mu1>1.6</mu1>
+    <mu2>1.6</mu2>
+    <self_collide>0</self_collide>
+    <kp value="1000000.0" />
+    <kd value="100.0" />
+    <maxVel>1.0</maxVel>
+    <minDepth>0.00</minDepth>
+  </gazebo>
+
+  <transmission name="leg_r1_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_r1_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_r1_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>40.0</maxEffort>
+    </actuator>
+  </transmission>
+  <transmission name="leg_r2_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_r2_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_r2_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>40.0</maxEffort>
+    </actuator>
+  </transmission>
+  <transmission name="leg_r3_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_r3_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_r3_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>120.0</maxEffort>
+    </actuator>
+  </transmission>
+  <transmission name="leg_r4_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_r4_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_r4_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>120.0</maxEffort>
+    </actuator>
+  </transmission>
+
+  <transmission name="leg_r5_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_r5_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_r5_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>27.0</maxEffort>
+    </actuator>
+  </transmission>
+
+<transmission name="leg_r6_tran">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="leg_r6_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="leg_r6_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+      <maxVelocity>30</maxVelocity>
+      <maxEffort>27.0</maxEffort>
+    </actuator>
+  </transmission>
+
+</robot>

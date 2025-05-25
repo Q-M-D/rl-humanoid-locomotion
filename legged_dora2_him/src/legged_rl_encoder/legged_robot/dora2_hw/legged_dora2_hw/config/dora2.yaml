@@ -1,0 +1,9 @@
+legged_dora2_hw:
+  loop_frequency: 500
+  cycle_time_error_threshold: 0.002
+  thread_priority: 95
+  power_limit: 6
+  contact_threshold: 200
+
+#*               hard    rtprio          99
+#*               soft    rtprio          99
