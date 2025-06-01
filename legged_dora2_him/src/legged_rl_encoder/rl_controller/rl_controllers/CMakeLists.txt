@@ -18,8 +18,6 @@ find_package(catkin REQUIRED
 
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 
-
-
 catkin_package(
         INCLUDE_DIRS
         include
@@ -37,20 +35,11 @@ catkin_package(
         message_generation
         robot_state_publisher
         tf
-        rospy
 )
-
 
 ###########
 ## Build ##
 ###########
-catkin_install_python(PROGRAMS
-  python_part/node1.py 
-  python_part/Contact_Listener.py 
-  python_part/Joint_Listener.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
 
 include_directories(
         include
@@ -100,7 +89,6 @@ endif (cmake_clang_tools_FOUND)
 #############
 ## Install ##
 #############
-
 
 # Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME}

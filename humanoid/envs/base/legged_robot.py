@@ -134,6 +134,12 @@ class LeggedRobot(BaseTask):
         self.base_ang_vel[:] = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])
         self.projected_gravity[:] = quat_rotate_inverse(self.base_quat, self.gravity_vec)
         self.base_euler_xyz = get_euler_xyz_tensor(self.base_quat)
+        
+        # Update contact history
+        # Shift history (move all entries one step back in time)
+        self.contact_history = torch.roll(self.contact_history, shifts=1, dims=2)
+        # Update the most recent contact state (first position in the history)
+        self.contact_history[:, :, 0] = self.contact_forces[:, self.feet_indices, 2] > 5.0
 
         self._post_physics_step_callback()
 
@@ -193,6 +199,7 @@ class LeggedRobot(BaseTask):
         self.last_rigid_state[env_ids] = 0.
         self.last_dof_vel[env_ids] = 0.
         self.feet_air_time[env_ids] = 0.
+        self.contact_history[env_ids] = False  # Reset contact history for reset environments
         self.episode_length_buf[env_ids] = 0
         self.reset_buf[env_ids] = 1
         # fill extras
@@ -267,6 +274,20 @@ class LeggedRobot(BaseTask):
                 props[s].friction = self.friction_coeffs[env_id]
 
             self.env_frictions[env_id] = self.friction_coeffs[env_id]
+                
+        # Randomize restitution
+        if hasattr(self.cfg.domain_rand, 'randomize_restitution') and self.cfg.domain_rand.randomize_restitution:
+            if env_id==0:
+                # prepare restitution randomization
+                restitution_range = self.cfg.domain_rand.restitution_range
+                num_buckets = 256
+                bucket_ids = torch.randint(0, num_buckets, (self.num_envs, 1))
+                restitution_buckets = torch_rand_float(restitution_range[0], restitution_range[1], (num_buckets,1), device='cpu')
+                self.restitution_coeffs = restitution_buckets[bucket_ids]
+                
+            for s in range(len(props)):
+                props[s].restitution = self.restitution_coeffs[env_id]
+                
         return props
     
 
@@ -291,13 +312,63 @@ class LeggedRobot(BaseTask):
                 self.dof_pos_limits[i, 1] = props["upper"][i].item() * self.cfg.safety.pos_limit
                 self.dof_vel_limits[i] = props["velocity"][i].item() * self.cfg.safety.vel_limit
                 self.torque_limits[i] = props["effort"][i].item() * self.cfg.safety.torque_limit
+                
+            # Create per-environment PD gain scaling factors
+            if hasattr(self.cfg.domain_rand, 'randomize_gains') and self.cfg.domain_rand.randomize_gains:
+                self.p_gain_scales = torch.ones((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
+                self.d_gain_scales = torch.ones((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
+                
+                # Generate random scaling factors
+                p_range = self.cfg.domain_rand.p_gain_range
+                d_range = self.cfg.domain_rand.d_gain_range
+                
+                for i in range(self.num_envs):
+                    self.p_gain_scales[i] = torch_rand_float(p_range[0], p_range[1], (self.num_dof, 1), device=self.device).squeeze(1)
+                    self.d_gain_scales[i] = torch_rand_float(d_range[0], d_range[1], (self.num_dof, 1), device=self.device).squeeze(1)
+            
+            # Create per-environment torque limit scaling factors
+            if hasattr(self.cfg.domain_rand, 'randomize_torques') and self.cfg.domain_rand.randomize_torques:
+                self.torque_limit_scales = torch.ones((self.num_envs, self.num_dof), dtype=torch.float, device=self.device)
+                
+                # Generate random scaling factors
+                torque_range = self.cfg.domain_rand.torque_range
+                
+                for i in range(self.num_envs):
+                    self.torque_limit_scales[i] = torch_rand_float(torque_range[0], torque_range[1], (self.num_dof, 1), device=self.device).squeeze(1)
+                
         return props
 
     def _process_rigid_body_props(self, props, env_id):
         # randomize base mass
         if self.cfg.domain_rand.randomize_base_mass:
             rng = self.cfg.domain_rand.added_mass_range
-            props[0].mass += np.random.uniform(rng[0], rng[1])
+            if isinstance(rng[0], float) and rng[0] < 1.0 and rng[1] > 1.0:  # Scaling factor
+                props[0].mass *= np.random.uniform(rng[0], rng[1])
+            else:  # Additive factor
+                props[0].mass += np.random.uniform(rng[0], rng[1])
+        
+        # randomize base center of mass
+        if hasattr(self.cfg.domain_rand, 'randomize_base_com') and self.cfg.domain_rand.randomize_base_com:
+            com_range = self.cfg.domain_rand.com_displacement_range
+            com_displacement = np.random.uniform(com_range[0], com_range[1], 3)
+            props[0].com.x += com_displacement[0]
+            props[0].com.y += com_displacement[1]
+            props[0].com.z += com_displacement[2]
+            
+        # randomize link masses and COMs (for links other than base)
+        if hasattr(self.cfg.domain_rand, 'randomize_link_mass') and self.cfg.domain_rand.randomize_link_mass:
+            mass_range = self.cfg.domain_rand.link_mass_range
+            for i in range(1, len(props)):  # Skip base (index 0)
+                props[i].mass *= np.random.uniform(mass_range[0], mass_range[1])
+                
+        if hasattr(self.cfg.domain_rand, 'randomize_link_com') and self.cfg.domain_rand.randomize_link_com:
+            com_range = self.cfg.domain_rand.link_com_displacement_range
+            for i in range(1, len(props)):  # Skip base (index 0)
+                com_displacement = np.random.uniform(com_range[0], com_range[1], 3)
+                props[i].com.x += com_displacement[0]
+                props[i].com.y += com_displacement[1]
+                props[i].com.z += com_displacement[2]
+                
         self.body_mass[env_id] = props[0].mass
         return props
     
@@ -336,9 +407,9 @@ class LeggedRobot(BaseTask):
         self.commands[env_ids, :2] *= (torch.norm(self.commands[env_ids, :2], dim=1) > 0.05).unsqueeze(1)
         
         # Randomly set some commands to zero (10% probability)
-        # zero_mask = torch.rand(len(env_ids), device=self.device) < 0.1
-        # zero_mask = zero_mask.unsqueeze(1).expand(-1, 3)  # Expand to match command dimensions
-        # self.commands[env_ids, :3] *= ~zero_mask
+        zero_mask = torch.rand(len(env_ids), device=self.device) < 0.1
+        zero_mask = zero_mask.unsqueeze(1).expand(-1, 3)  # Expand to match command dimensions
+        self.commands[env_ids, :3] *= ~zero_mask
 
     def _compute_torques(self, actions):
         """ Compute torques from actions.
@@ -353,10 +424,24 @@ class LeggedRobot(BaseTask):
         """
         # pd controller
         actions_scaled = actions * self.cfg.control.action_scale
-        p_gains = self.p_gains
-        d_gains = self.d_gains
+        
+        # Apply randomized PD gains if enabled
+        if hasattr(self.cfg.domain_rand, 'randomize_gains') and self.cfg.domain_rand.randomize_gains:
+            p_gains = self.p_gains * self.p_gain_scales
+            d_gains = self.d_gains * self.d_gain_scales
+        else:
+            p_gains = self.p_gains
+            d_gains = self.d_gains
+            
         torques = p_gains * (actions_scaled + self.default_dof_pos - self.dof_pos) - d_gains * self.dof_vel
-        return torch.clip(torques, -self.torque_limits, self.torque_limits)
+        
+        # Apply randomized torque limits if enabled
+        if hasattr(self.cfg.domain_rand, 'randomize_torques') and self.cfg.domain_rand.randomize_torques:
+            torque_limits = self.torque_limits.unsqueeze(0) * self.torque_limit_scales
+        else:
+            torque_limits = self.torque_limits
+            
+        return torch.clip(torques, -torque_limits, torque_limits)
 
     
     def _reset_dofs(self, env_ids):
@@ -468,6 +553,14 @@ class LeggedRobot(BaseTask):
         self.torques = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
         self.p_gains = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
         self.d_gains = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
+        
+        # Domain randomization buffers
+        self.p_gain_scales = torch.ones((self.num_envs, self.num_actions), dtype=torch.float, device=self.device, requires_grad=False)
+        self.d_gain_scales = torch.ones((self.num_envs, self.num_actions), dtype=torch.float, device=self.device, requires_grad=False)
+        self.torque_limit_scales = torch.ones((self.num_envs, self.num_actions), dtype=torch.float, device=self.device, requires_grad=False)
+        self.env_frictions = torch.ones((self.num_envs, 1), dtype=torch.float, device=self.device, requires_grad=False)
+        self.restitution_coeffs = torch.ones((self.num_envs, 1), dtype=torch.float, device=self.device, requires_grad=False)
+        
         self.actions = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
         self.last_actions = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
         self.last_last_actions = torch.zeros(self.num_envs, self.num_actions, dtype=torch.float, device=self.device, requires_grad=False)
@@ -511,6 +604,12 @@ class LeggedRobot(BaseTask):
         self.default_joint_pd_target = self.default_dof_pos.clone()
         self.obs_history = deque(maxlen=self.cfg.env.frame_stack)
         self.critic_history = deque(maxlen=self.cfg.env.c_frame_stack)
+        
+        # Calculate number of history steps needed for 0.2 seconds (dt is the physics step time)
+        self.contact_history_steps = max(1, int(0.5 / self.dt))
+        self.contact_history = torch.zeros((self.num_envs, len(self.feet_indices), self.contact_history_steps), 
+                                           dtype=torch.bool, device=self.device, requires_grad=False)
+        
         for _ in range(self.cfg.env.frame_stack):
             self.obs_history.append(torch.zeros(
                 self.num_envs, self.cfg.env.num_single_obs, dtype=torch.float, device=self.device))
@@ -796,3 +895,20 @@ class LeggedRobot(BaseTask):
         heights = torch.min(heights, heightXBotL)
 
         return heights.view(self.num_envs, -1) * self.terrain.cfg.vertical_scale
+    
+    def _push_robots(self):
+        """ Random pushes the robots. Emulates an impulse by setting a randomized base velocity. 
+        """
+        max_vel = self.cfg.domain_rand.max_push_vel_xy
+        max_push_angular = self.cfg.domain_rand.max_push_ang_vel
+        self.rand_push_force[:, :2] = torch_rand_float(
+            -max_vel, max_vel, (self.num_envs, 2), device=self.device)  # lin vel x/y
+        self.root_states[:, 7:9] = self.rand_push_force[:, :2]
+
+        self.rand_push_torque = torch_rand_float(
+            -max_push_angular, max_push_angular, (self.num_envs, 3), device=self.device)
+
+        self.root_states[:, 10:13] = self.rand_push_torque
+
+        self.gym.set_actor_root_state_tensor(
+            self.sim, gymtorch.unwrap_tensor(self.root_states))

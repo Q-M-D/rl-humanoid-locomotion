@@ -21,7 +21,5 @@
     </group>
 
     <include file="$(find rl_controllers)/launch/load_ac_controller.launch"/>
-    <!-- <node name="python_node" pkg="rl_controllers" type="node1.py" output="screen" />     -->
-    <!-- <node name="Contact_Listener" pkg="rl_controllers" type="Contact_Listener.py" output="screen" />     -->
-    <!-- <node name="Joint_Listener" pkg="rl_controllers" type="Joint_Listener.py" output="screen" />     -->
-</launch>
+
+</launch> 

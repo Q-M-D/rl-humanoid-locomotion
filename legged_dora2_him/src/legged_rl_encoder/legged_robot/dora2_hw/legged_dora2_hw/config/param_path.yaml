@@ -1,2 +1,2 @@
-user_param_path: /home/mmlab/legged_dora2_him/src/legged_rl_encoder/legged_robot/dora2_hw/legged_dora2_hw/config/config.yaml
-ethercat_param_path: /home/mmlab/legged_dora2_him/src/legged_rl_encoder/legged_robot/dora2_hw/legged_dora2_hw/config/ethercat_config.yaml
+user_param_path: /home/mmlab/legged_dora2_erect/src/legged_rl_encoder/legged_robot/dora2_hw/legged_dora2_hw/config/config.yaml
+ethercat_param_path: /home/mmlab/legged_dora2_erect/src/legged_rl_encoder/legged_robot/dora2_hw/legged_dora2_hw/config/ethercat_config.yaml

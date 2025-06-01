@@ -33,12 +33,10 @@
 from humanoid import LEGGED_GYM_ROOT_DIR, LEGGED_GYM_ENVS_DIR
 from .base.legged_robot import LeggedRobot
 
-from .custom.humanoid_config import XBotLCfg, XBotLCfgPPO, Dora2Cfg, Dora2CfgPPO
-from .custom.humanoid_env import XBotLFreeEnv
+from .custom.humanoid_config import Dora2Cfg, Dora2CfgPPO
+from .custom.humanoid_env import Dora2Env
 
 from humanoid.utils.task_registry import task_registry
 
 
-task_registry.register( "humanoid_ppo", XBotLFreeEnv, XBotLCfg(), XBotLCfgPPO() )
-
-task_registry.register( "humanoid_dora2", XBotLFreeEnv, Dora2Cfg(), Dora2CfgPPO() )
+task_registry.register( "humanoid_dora2", Dora2Env, Dora2Cfg(), Dora2CfgPPO() )

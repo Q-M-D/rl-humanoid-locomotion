@@ -1,4 +1,4 @@
-net_card: enx207bd2d4eedd
+net_card: enxc8a3625563bc
 ctr_freq: 1000
 robot_type: 1
 node_motor_num: [4, 4, 5, 5]

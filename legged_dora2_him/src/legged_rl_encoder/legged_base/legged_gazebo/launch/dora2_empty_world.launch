@@ -15,6 +15,6 @@
 
     <!-- push robot_description to factory and spawn robot in gazebo -->
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" clear_params="true"
-          args="-z 0.73 -param legged_robot_description -urdf -model dora2" output="screen"/>
+          args="-z 1.0 -param legged_robot_description -urdf -model dora2" output="screen"/>
 
 </launch>

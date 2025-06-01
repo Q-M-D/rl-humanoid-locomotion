@@ -113,6 +113,9 @@ def play(args):
             env.commands[:, 1] = command[1].item()
             env.commands[:, 2] = 0.0
             env.commands[:, 3] = command[2].item()
+            if command[3].item() > 0:
+                print("Resetting environment")
+                env.reset_idx(torch.arange(env.num_envs, device=env.device))
         
         obs, critic_obs, rews, dones, infos = env.step(actions.detach())
         

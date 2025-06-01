@@ -33,7 +33,7 @@ namespace legged
       std::string partName = hybridJointHandles_[i].getName();
       scalar_t pos_des = actions_[i] * robotCfg_.controlCfg.actionScale + defaultJointAngles_(i);
       double stiffness = robotCfg_.controlCfg.stiffness[partName]; // 根据关节名称获取刚度
-      double damping = robotCfg_.controlCfg.damping[partName];     // 根据关节名称获取阻尼
+      double damping = robotCfg_.controlCfg.damping[partName]; // 根据关节名称获取阻尼
       std::cout << "joint_name:" << partName << "kp:" << stiffness << " kd:" << damping << std::endl;
       hybridJointHandles_[i].setCommand(pos_des, 0, stiffness, damping, 0);
       std::cout << "action:" << actions_[i] << std::endl;
@@ -77,14 +77,14 @@ namespace legged
       std::cerr << "Policy Shape: [";
       for (size_t j = 0; j < policyShape.size(); ++j)
       {
-        std::cout << policyShape[j];
-        if (j != policyShape.size() - 1)
-        {
-          std::cerr << ", ";
-        }
+          std::cout << policyShape[j];
+          if (j != policyShape.size() - 1)
+          {
+              std::cerr << ", ";
+          }
       }
       std::cout << "]" << std::endl;
-    }
+}
     for (int i = 0; i < policySessionPtr_->GetOutputCount(); i++)
     {
       auto policyOutputnamePtr = policySessionPtr_->GetOutputNameAllocated(i, allocator);
@@ -97,11 +97,11 @@ namespace legged
       std::cerr << "Policy Shape: [";
       for (size_t j = 0; j < policyShape.size(); ++j)
       {
-        std::cout << policyShape[j];
-        if (j != policyShape.size() - 1)
-        {
-          std::cerr << ", ";
-        }
+          std::cout << policyShape[j];
+          if (j != policyShape.size() - 1)
+          {
+              std::cerr << ", ";
+          }
       }
       std::cout << "]" << std::endl;
     }
@@ -124,12 +124,14 @@ namespace legged
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/init_state/default_joint_angle/leg_l5_joint", initState.leg_l5_joint));
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/init_state/default_joint_angle/leg_l5_joint", initState.leg_l6_joint));
 
+
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/init_state/default_joint_angle/leg_r1_joint", initState.leg_r1_joint));
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/init_state/default_joint_angle/leg_r2_joint", initState.leg_r2_joint));
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/init_state/default_joint_angle/leg_r3_joint", initState.leg_r3_joint));
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/init_state/default_joint_angle/leg_r4_joint", initState.leg_r4_joint));
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/init_state/default_joint_angle/leg_r5_joint", initState.leg_r5_joint));
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/init_state/default_joint_angle/leg_r5_joint", initState.leg_r6_joint));
+    
 
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/control/stiffness", controlCfg.stiffness));
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/control/damping", controlCfg.damping));
@@ -150,12 +152,7 @@ namespace legged
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/size/actions_size", actionsSize_));
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/size/observations_size", observationSize_));
     error += static_cast<int>(!nh.getParam("/LeggedRobotCfg/size/stack_size", stackSize_));
-    
-    if (observationSize_ != 47)
-    {
-        ROS_ERROR_STREAM("Expected observations_size to be 47, but got " << observationSize_);
-        return false;
-    }
+
     actions_.resize(actionsSize_);
     policyObservations_.resize(observationSize_ * stackSize_);
     std::fill(policyObservations_.begin(), policyObservations_.end(), 0.0f);
@@ -166,19 +163,10 @@ namespace legged
     baseLinVel_.setZero();
     basePosition_.setZero();
     std::vector<scalar_t> defaultJointAngles{
-        robotCfg_.initState.leg_l1_joint,
-        robotCfg_.initState.leg_l2_joint,
-        robotCfg_.initState.leg_l3_joint,
-        robotCfg_.initState.leg_l4_joint,
-        robotCfg_.initState.leg_l5_joint,
-        robotCfg_.initState.leg_l6_joint,
-        robotCfg_.initState.leg_r1_joint,
-        robotCfg_.initState.leg_r2_joint,
-        robotCfg_.initState.leg_r3_joint,
-        robotCfg_.initState.leg_r4_joint,
-        robotCfg_.initState.leg_r5_joint,
-        robotCfg_.initState.leg_r6_joint,
-    };
+        robotCfg_.initState.leg_l1_joint, robotCfg_.initState.leg_l2_joint, robotCfg_.initState.leg_l3_joint,
+        robotCfg_.initState.leg_l4_joint, robotCfg_.initState.leg_l5_joint, robotCfg_.initState.leg_l6_joint,
+        robotCfg_.initState.leg_r1_joint,robotCfg_.initState.leg_r2_joint, robotCfg_.initState.leg_r3_joint,
+        robotCfg_.initState.leg_r4_joint,robotCfg_.initState.leg_r5_joint, robotCfg_.initState.leg_r6_joint,};
     lastActions_.resize(actionsSize_);
     lastActions_.setZero();
     const int inputSize = stackSize_ * observationSize_;
@@ -195,27 +183,18 @@ namespace legged
   void AcController::computeActions()
   {
 
-    if (policyObservations_.size() != 940) {
-        std::cerr << "Input data size mismatch! Expected 940, got " << policyObservations_.size() << std::endl;
-        return;
-    }
-    // 创建固定形状的输入张量
-    std::vector<int64_t> fixedInputShape = {1, 940}; // 固定输入形状为 1x705
     std::vector<Ort::Value> policyInputValues;
     policyInputValues.push_back(Ort::Value::CreateTensor<tensor_element_t>(memoryInfo, policyObservations_.data(), policyObservations_.size(),
-                                                                           policyInputShapes_[0].data(), policyInputShapes_[0].size()));
+                                                                         policyInputShapes_[0].data(), policyInputShapes_[0].size()));
     // run inference
     Ort::RunOptions runOptions;
     std::vector<Ort::Value> outputValues = policySessionPtr_->Run(runOptions, policyInputNames_.data(), policyInputValues.data(), 1, policyOutputNames_.data(), 1);
 
-    if (isfirstCompAct_)
-    {
-      for (int i = 0; i < policyObservations_.size(); ++i)
-      {
+    if (isfirstCompAct_){
+      for (int i = 0; i < policyObservations_.size(); ++i) {
         std::cout << policyObservations_[i] << " ";
-        if ((i + 1) % observationSize_ == 0)
-        {
-          std::cout << std::endl;
+        if ((i + 1) % observationSize_ == 0) {
+            std::cout << std::endl;
         }
       }
       isfirstCompAct_ = false;
@@ -234,33 +213,27 @@ namespace legged
     vector_t command(5);
     phase_ = phase_ / robotCfg_.controlCfg.cycle_time;
 
-    printf("phase_: %f\n", phase_);
-    printf("cycle_time: %f\n", robotCfg_.controlCfg.cycle_time);
+    // command_x = 0.995 * command_x + 0.005 * command_.x;
 
-    if (command_.x < -0.6)
-      command_.x = -0.6;
-    // if (abs(command_.x) < 0.2 && abs(command_.y) < 0.2 && abs(command_.yaw) < 0.2){
+    // command_y = 0.995 * command_y + 0.005 * command_.y;
+
+    // command_yaw = 0.995 * command_yaw + 0.005 * command_.yaw;
+
+    if (command_x < -0.5) command_x = -0.5;
+    // if (abs(command_x) < 0.05 && abs(command_y) < 0.05 && abs(command_.yaw) < 0.05){
     //   phase_ = 0;
-    //   command_.x = 0.0;
-    //   command_.y = 0.0;
-    //   command_.yaw = 0.0;
+    //   // command_.x = 0.0;
+    //   // command_.y = 0.0;
+    //   // command_.yaw = 0.0;
     // }
 
-    double command_x = command_.x.load();
-    double command_y = command_.y.load();
-    double command_yaw = command_.yaw.load();
 
     command[0] = sin(2 * M_PI * phase_);
     command[1] = cos(2 * M_PI * phase_);
-    command[2] = command_.x * obsScales.linVel;
-    printf("command_.x: %f\n", command_x);
-    printf("obsScales.linVel: %f\n", obsScales.linVel);
+    command[2] = command_.x* obsScales.linVel;
     command[3] = command_.y * obsScales.linVel;
-    printf("command_.y: %f\n", command_y);
-    printf("obsScales.linVel: %f\n", obsScales.linVel);
     command[4] = command_.yaw * obsScales.angVel;
-    printf("command_.yaw: %f\n", command_yaw);
-    printf("obsScales.angVel: %f\n", obsScales.angVel);
+
 
     // actions
     vector_t actions(lastActions_);
@@ -269,21 +242,21 @@ namespace legged
 
     vector_t proprioObs(observationSize_);
 
-    proprioObs << command,                                           // 5(0-4)->(0-4)
-        (propri_.jointPos - defaultJointAngles_) * obsScales.dofPos, // 12(10-21)->(5-16)
-        propri_.jointVel * obsScales.dofVel,                         // 12(22-33)->(17-28)
-        actions,                                                     // 12(34-45)->(29-40)
-        propri_.baseAngVel * obsScales.angVel,                       // 3(5-7)->(41-43)
-        propri_.baseEulerXyz(0) * obsScales.quat,                    // 1(8)->(44)
-        propri_.baseEulerXyz(1) * obsScales.quat;                    // 1(9)->(45)
-        propri_.baseEulerXyz(2) * obsScales.quat;                    // (46)
+    proprioObs << command, // 5
+        propri_.baseAngVel * obsScales.angVel,  // 3
+        propri_.baseEulerXyz(0) * obsScales.quat,  // 1
+        propri_.baseEulerXyz(1) * obsScales.quat,  // 1
+        (propri_.jointPos - defaultJointAngles_) * obsScales.dofPos,  // 12
+        propri_.jointVel * obsScales.dofVel,  // 12
+        actions;  // 12
+
 
     if (isfirstRecObs_)
     {
       for (
-          int i = 29; i < 41; i++) // observationSize_: 47, actionSize_: 12
+         int i = 34; i <46; i++) //observationSize_: 46, actionSize_: 12
       {
-        proprioObs(i, 0) = 0.0;
+        proprioObs(i,0) = 0.0;
       }
 
       for (size_t i = 0; i < stackSize_; i++)
@@ -297,10 +270,10 @@ namespace legged
         proprioHistoryBuffer_.tail(proprioHistoryBuffer_.size() - observationSize_);
     proprioHistoryBuffer_.tail(observationSize_) = proprioObs.cast<tensor_element_t>();
 
+
     // clang-format on
 
-    for (size_t i = 0; i < (observationSize_ * stackSize_); i++)
-    {
+    for (size_t i = 0; i < (observationSize_ * stackSize_); i++){
       policyObservations_[i] = static_cast<tensor_element_t>(proprioHistoryBuffer_[i]);
       // if(i < observationSize_)
       // std::cout << i << "obs:::" << estObservations_[i] << std::endl;
@@ -308,8 +281,6 @@ namespace legged
     // Limit observation range
     scalar_t obsMin = -robotCfg_.clipObs;
     scalar_t obsMax = robotCfg_.clipObs;
-    printf("obsMin: %f\n", obsMin);
-    printf("obsMax: %f\n", obsMax);
     std::transform(policyObservations_.begin(), policyObservations_.end(), policyObservations_.begin(),
                    [obsMin, obsMax](scalar_t x)
                    { return std::max(obsMin, std::min(obsMax, x)); });

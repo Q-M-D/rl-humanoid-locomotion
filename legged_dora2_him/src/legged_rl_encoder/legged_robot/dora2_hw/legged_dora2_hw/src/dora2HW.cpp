@@ -49,13 +49,14 @@ namespace legged
     //     ROS_WARN("Parameter depth_image_topic not set. Using default: %s", net_card.c_str());
     // }
     // 通过rosparam读取config.yaml路径 */
+
     //drake 可能用不了 可以请教杨太文有没有其他解决方案，现在是在.h文件中直接读取的
     if (!root_nh.getParam("/user_param_path", user_param_path)) {
-        user_param_path = "/home/mmlab/legged_dora2_him/src/legged_rl_encoder/legged_robot/dora2_hw/legged_dora2_hw/config/user_param_path.yaml";
+        user_param_path = "/home/mmlab/legged_dora2_erect/src/legged_rl_encoder/legged_robot/dora2_hw/legged_dora2_hw/config/user_param_path.yaml";
         ROS_WARN("Parameter user_param_path not set. Using default: %s", user_param_path.c_str());
     }
     if (!root_nh.getParam("/ethercat_param_path", ethercat_param_path)) {
-        ethercat_param_path = "/home/mmlab/legged_dora2_him/src/legged_rl_encoder/legged_robot/dora2_hw/legged_dora2_hw/config/ethercat_config.yaml";
+        ethercat_param_path = "/home/mmlab/legged_dora2_erect/src/legged_rl_encoder/legged_robot/dora2_hw/legged_dora2_hw/config/ethercat_config.yaml";
         ROS_WARN("Parameter ethercat_param_path not set. Using default: %s", ethercat_param_path.c_str());
     }
 
@@ -111,7 +112,7 @@ namespace legged
     //可以写死
     
     printf("aaaaaaaaaaaaaaaaaaaaa");
-    std::string if_name = "enx207bd2d4eedd";
+    std::string if_name = "enxc8a3625563bc";
     rt_ethercat_init(if_name);
     printf("llllllllllllllllllllll");
   
@@ -380,6 +381,7 @@ namespace legged
 
   void dora2HW::write(const ros::Time &time, const ros::Duration &period)
   {
+    // 500HZ
     int temp_tor = 0;
     /*
       第一步 命令赋值
@@ -394,9 +396,9 @@ namespace legged
         control_fsm_data->torque_des_[3][i] = joint_data_[i].ff_;
         // control_fsm_data->torque_des_[3][i] = 0;
         
-        // std::cout << "left leg num" << i << ":  kp:" << control_fsm_data->kp_[3][i] << "  kd:" << control_fsm_data->kd_[3][i]
-        // << "  pos:" << control_fsm_data->position_des_[3][i] << " vel:" <<  control_fsm_data->velocity_des_[3][i] <<
-        // " tor:" <<  control_fsm_data->torque_des_[3][i] << std::endl;
+        std::cout << "left leg num" << i << ":  kp:" << control_fsm_data->kp_[3][i] << "  kd:" << control_fsm_data->kd_[3][i]
+        << "  pos:" << control_fsm_data->position_des_[3][i] << " vel:" <<  control_fsm_data->velocity_des_[3][i] <<
+        " tor:" <<  control_fsm_data->torque_des_[3][i] << std::endl;
     }
     //  right leg
     for (int i = 0; i < 6; ++i) {
@@ -407,9 +409,9 @@ namespace legged
         control_fsm_data->torque_des_[2][i] = joint_data_[i+6].ff_;
         // control_fsm_data->torque_des_[2][i] = 0;
 
-        // std::cout << "right leg num" << i << ":  kp:" << control_fsm_data->kp_[2][i] << "  kd:" << control_fsm_data->kd_[2][i]
-        // << "  pos:" << control_fsm_data->position_des_[2][i] << " vel:" <<  control_fsm_data->velocity_des_[2][i] <<
-        // " tor:" <<  control_fsm_data->torque_des_[2][i] << std::endl;
+        std::cout << "right leg num" << i << ":  kp:" << control_fsm_data->kp_[2][i] << "  kd:" << control_fsm_data->kd_[2][i]
+        << "  pos:" << control_fsm_data->position_des_[2][i] << " vel:" <<  control_fsm_data->velocity_des_[2][i] <<
+        " tor:" <<  control_fsm_data->torque_des_[2][i] << std::endl;
     }
     // //  left arm
     // for (int i = 0; i < 4; ++i) {
@@ -583,13 +585,13 @@ namespace legged
         node_3->medulla_cmd_.motor_4 = byte_8.udata;
         //node_3->medulla_cmd_.lz_4 = temp_tor & 0xFFFF;
 
-        //5. right toe
+        //4. right toe
         pack_pvt_cmd_ex(byte_8.buffer, (float)control_fsm_data->kp_[2][4], (float)control_fsm_data->kd_[2][4],
                     (float)control_fsm_data->position_des_[2][4] + (float)control_fsm_data->joint_offset_[2][4], (float)control_fsm_data->velocity_des_[2][4],
                     (float)control_fsm_data->torque_des_[2][4], 12, control_fsm_data, MotorType::INKEXBOT);
         node_3->medulla_cmd_.motor_5 = byte_8.udata;
 
-        //6. right toe
+        //4. right toe
         pack_pvt_cmd_ex(byte_8.buffer, (float)control_fsm_data->kp_[2][5], (float)control_fsm_data->kd_[2][5],
                     (float)control_fsm_data->position_des_[2][5] + (float)control_fsm_data->joint_offset_[2][5], (float)control_fsm_data->velocity_des_[2][5],
                     (float)control_fsm_data->torque_des_[2][5], 13, control_fsm_data, MotorType::INKEXBOT);

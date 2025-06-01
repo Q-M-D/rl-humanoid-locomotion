@@ -29,6 +29,7 @@
 
 
 from humanoid.envs.base.legged_robot_config import LeggedRobotCfg
+from humanoid.envs.custom.humanoid_config import Dora2Cfg
 
 from isaacgym.torch_utils import *
 from isaacgym import gymtorch, gymapi
@@ -39,9 +40,9 @@ from humanoid.envs import LeggedRobot
 from humanoid.utils.terrain import  HumanoidTerrain
 
 
-class XBotLFreeEnv(LeggedRobot):
+class Dora2Env(LeggedRobot):
     '''
-    XBotLFreeEnv is a class that represents a custom environment for a legged robot.
+    Dora2Env is a class that represents a custom environment for a legged robot.
 
     Args:
         cfg (LeggedRobotCfg): Configuration object for the legged robot.
@@ -73,7 +74,7 @@ class XBotLFreeEnv(LeggedRobot):
         compute_observations(): Computes the observations.
         reset_idx(env_ids): Resets the environment for the specified environment IDs.
     '''
-    def __init__(self, cfg: LeggedRobotCfg, sim_params, physics_engine, sim_device, headless):
+    def __init__(self, cfg: Dora2Cfg, sim_params, physics_engine, sim_device, headless):
         super().__init__(cfg, sim_params, physics_engine, sim_device, headless)
         self.last_feet_z = 0.05
         self.feet_height = torch.zeros((self.num_envs, 2), device=self.device)
@@ -103,12 +104,10 @@ class XBotLFreeEnv(LeggedRobot):
         phase = (self.episode_length_buf * self.dt / cycle_time) % 1.0#change
         return phase
 
+
     def _get_gait_phase(self):
         phase = self._get_phase()
         sin_pos = torch.sin(2 * torch.pi * phase)
-        
-        #print("Phase:", phase)
-        #print("Sin position:", sin_pos)
         
         stance_mask = torch.zeros((self.num_envs, 2), device=self.device)
         
@@ -120,11 +119,8 @@ class XBotLFreeEnv(LeggedRobot):
         # Double support phase
         stance_mask[torch.abs(sin_pos) < 0.1] = 1
         
-        #print("Stance mask:", stance_mask)
-        
         return stance_mask
 
-    
 
     def compute_ref_state(self):
         phase = self._get_phase()
@@ -147,7 +143,7 @@ class XBotLFreeEnv(LeggedRobot):
         sin_pos_r[sin_pos_r < 0] = 0
         self.ref_dof_pos[:, 8] = sin_pos_r * scale_1+self.cfg.init_state.default_joint_angles['r_leg_hip_pitch_joint']
         self.ref_dof_pos[:, 9] = sin_pos_r * scale_2+self.cfg.init_state.default_joint_angles['r_leg_knee_joint']
-        self.ref_dof_pos[:, 10] = sin_pos_r * scale_1+self.cfg.init_state.default_joint_angles['r_leg_ankle_pitch_joint']# 限制右脚的roll角度（例如：限制在-10°到+10°之间）
+        self.ref_dof_pos[:, 10] = sin_pos_r * scale_1+self.cfg.init_state.default_joint_angles['r_leg_ankle_pitch_joint']
         right_roll_limit = 7 * (torch.pi / 180)  # 转换为弧度
         self.ref_dof_pos[:, 11] = torch.clamp(self.ref_dof_pos[:, 11], -right_roll_limit, right_roll_limit)
         # Double support phase
@@ -250,11 +246,11 @@ class XBotLFreeEnv(LeggedRobot):
 
         obs_buf = torch.cat((
             self.command_input,  # 5 = 2D(sin cos) + 3D(vel_x, vel_y, aug_vel_yaw)
+            self.base_ang_vel * self.obs_scales.ang_vel,  # 3
+            self.base_euler_xyz[:, :2] * self.obs_scales.quat,  # 2
             q,    # 12D
             dq,  # 12D
             self.actions,   # 12D
-            self.base_ang_vel * self.obs_scales.ang_vel,  # 3
-            self.base_euler_xyz * self.obs_scales.quat,  # 3
         ), dim=-1)
 
         if self.cfg.terrain.measure_heights:
@@ -291,10 +287,9 @@ class XBotLFreeEnv(LeggedRobot):
         joint_pos = self.dof_pos.clone()
         pos_target = self.ref_dof_pos.clone()
         
-        # TODO: note this
-        # Check if all command inputs are small (no significant movement commands)
-        # if not torch.any(torch.abs(self.command_input[:, :3]) > 0.05):
-        #     pos_target = torch.zeros_like(pos_target)
+        # For stand mode
+        if not torch.any(self.commands[:, :3] > 0.001):
+            pos_target = torch.zeros_like(pos_target, device=self.device)
         
         diff = joint_pos - pos_target
         # 分别计算 roll 和 pitch 的误差
@@ -308,7 +303,7 @@ class XBotLFreeEnv(LeggedRobot):
         r = torch.exp(-2 * torch.norm(total_diff, dim=1)) - 0.2 * torch.norm(total_diff, dim=1).clamp(0, 0.5)
         #r = torch.exp(-2 * torch.norm(diff, dim=1)) - 0.2 * torch.norm(diff, dim=1).clamp(0, 0.5)
         
-        if not torch.any(torch.abs(self.command_input[:, :3]) > 0.05):
+        if not torch.any(self.commands[:, :3] > 0.001):
             r *= 3
         
         return r
@@ -349,23 +344,27 @@ class XBotLFreeEnv(LeggedRobot):
         foot_speed_norm = torch.norm(self.rigid_state[:, self.feet_indices, 7:9], dim=2)
         rew = torch.sqrt(foot_speed_norm)
         rew *= contact
-        return torch.sum(rew, dim=1)    
+        return torch.sum(rew, dim=1)
 
     def _reward_feet_air_time(self):
         """
-        Calculates the reward for feet air time, promoting longer steps. This is achieved by
-        checking the first contact with the ground after being in the air. The air time is
-        limited to a maximum value for reward calculation.
+        Gives a reward of 1 if n_{c,t}=1 for any t in [t-0.2, t], where n_{c,t} represents
+        a contact state within the specified time window.
+        
+        This function checks if any foot has made contact with the ground within the last 0.2 seconds
+        and provides a reward of 1 when contact is detected within this time window.
         """
-        contact = self.contact_forces[:, self.feet_indices, 2] > 5.
-        stance_mask = self._get_gait_phase()
-        self.contact_filt = torch.logical_or(torch.logical_or(contact, stance_mask), self.last_contacts)
+        # Current contact state
+        contact = self.contact_forces[:, self.feet_indices, 2] > 0.
+        has_single_contact_in_window = torch.mean(torch.logical_xor(self.contact_history[:, 0], self.contact_history[:, 1]).float(), dim=1)
+        
+        if not torch.any(self.commands[:, :3]) > 0.001:
+            has_single_contact_in_window = torch.ones_like(has_single_contact_in_window, dtype=torch.bool)
+        
+        reward = torch.mean(has_single_contact_in_window.float())
+        
         self.last_contacts = contact
-        first_contact = (self.feet_air_time > 0.) * self.contact_filt
-        self.feet_air_time += self.dt
-        air_time = self.feet_air_time.clamp(0, 0.5) * first_contact
-        self.feet_air_time *= ~self.contact_filt
-        return air_time.sum(dim=1)
+        return reward
 
     def _reward_feet_contact_number(self):
         """
@@ -373,23 +372,7 @@ class XBotLFreeEnv(LeggedRobot):
         Rewards or penalizes depending on whether the foot contact matches the expected gait phase.
         """
         contact = self.contact_forces[:, self.feet_indices, 2] > 5.
-        # Check if there are significant movement commands
-        has_significant_commands = torch.any(torch.abs(self.commands[:, :3]) > 0.05, dim=1, keepdim=True)
-        
-        # Get stance mask based on gait phase
-        gait_stance_mask = self._get_gait_phase()
-        
-        # For low commands, use default stance (both feet)
-        default_stance = torch.ones_like(contact)
-        
-        # Select appropriate stance mask based on command magnitude
-        stance_mask = torch.where(
-            has_significant_commands, 
-            gait_stance_mask,
-            default_stance
-        )
-        # TODO: pay attention to this
-        stance_mask = gait_stance_mask
+        stance_mask = self._get_gait_phase()
         
         reward = torch.where(contact == stance_mask, 1.0, -0.5)
         return torch.mean(reward, dim=1)
@@ -508,12 +491,6 @@ class XBotLFreeEnv(LeggedRobot):
         self.feet_height += delta_z
         self.last_feet_z = feet_z
 
-        # # Debug: Print feet heights and delta_z
-        # print("Feet Height Left:", self.feet_height[:, 0])
-        # print("Feet Height Right:", self.feet_height[:, 1])
-        # print("Delta Z Left:", delta_z[:, 0])
-        # print("Delta Z Right:", delta_z[:, 1])
-
         # Compute swing mask
         swing_mask = 1 - self._get_gait_phase()
 
@@ -521,12 +498,7 @@ class XBotLFreeEnv(LeggedRobot):
         rew_pos = torch.abs(self.feet_height - self.cfg.rewards.target_feet_height) < 0.01
         rew_pos = torch.sum(rew_pos * swing_mask, dim=1)
         self.feet_height *= ~contact
-
-        # Debug: Print rewards
-        #print("Reward Position:", rew_pos)
-
         return rew_pos
-
 
     def _reward_low_speed(self):
         """

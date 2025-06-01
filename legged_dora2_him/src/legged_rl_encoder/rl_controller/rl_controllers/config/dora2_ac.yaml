@@ -21,7 +21,7 @@ LeggedRobotCfg:
     stiffness:
       # leg_l1_joint: 80
       # leg_l2_joint: 80
-      leg_l1_joint: 80
+      leg_l1_joint: 90
       leg_l2_joint: 80
       leg_l3_joint: 80
       leg_l4_joint: 80
@@ -30,21 +30,21 @@ LeggedRobotCfg:
   
       # leg_r1_joint: 80
       # leg_r2_joint: 80
-      leg_r1_joint: 80
+      leg_r1_joint: 90
       leg_r2_joint: 80
       leg_r3_joint: 80
       leg_r4_joint: 80
       leg_r5_joint: 10
       leg_r6_joint: 10
     damping:
-      leg_l1_joint: 4.0
+      leg_l1_joint: 5.0
       leg_l2_joint: 4.0
       leg_l3_joint: 4.0
       leg_l4_joint: 4.0
       leg_l5_joint: 0.5
       leg_l6_joint: 0.5
   
-      leg_r1_joint: 4.0
+      leg_r1_joint: 5.0
       leg_r2_joint: 4.0
       leg_r3_joint: 4.0
       leg_r4_joint: 4.0
@@ -126,7 +126,7 @@ LeggedRobotCfg:
       clip_observations: 18.0
       clip_actions: 18.0
     obs_scales:
-      lin_vel: 2
+      lin_vel: 0.6
       ang_vel: 1
       dof_pos: 1
       dof_vel: 0.05
@@ -136,5 +136,5 @@ LeggedRobotCfg:
   size:
   #listao
     actions_size: 12
-    observations_size: 47
+    observations_size: 46
     stack_size: 20

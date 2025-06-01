@@ -23,7 +23,6 @@
 #include "TutorialsConfig.h"
 #include <dynamic_reconfigure/server.h>
 #include <dynamic_reconfigure/ParamDescription.h>
-#include <std_msgs/Bool.h>
 
 #include <atomic>
 
@@ -210,8 +209,6 @@ namespace legged
     ros::Publisher outputPlannedJointVelPublisher_;
     ros::Publisher outputPlannedJointPosPublisher_;
     ros::Publisher outputPlannedTorquePublisher_;
-
-    ros::Publisher sensorContact_;
 
     int walkCount_ = 0;
     float cfg_kd;

@@ -11,8 +11,8 @@
 
     <build_depend>cmake_clang_tools</build_depend>
     <depend>roscpp</depend>
-    <depend>rospy</depend>
     <depend>legged_common</depend>
+
     <depend>controller_interface</depend>
     <exec_depend>controller_manager</exec_depend>
     <depend>dynamic_reconfigure</depend>
@@ -21,10 +21,7 @@
     <depend>robot_state_publisher</depend>
     <depend>message_generation</depend>
     <depend>tf</depend>
-    
-    <!-- <exec_depend>roscpp</exec_depend>
-    <exec_depend>rospy</exec_depend>
-    <exec_depend>std_msgs</exec_depend> -->
+
     <export>
         <controller_interface plugin="${prefix}/rl_controllers_plugins.xml"/>
     </export>

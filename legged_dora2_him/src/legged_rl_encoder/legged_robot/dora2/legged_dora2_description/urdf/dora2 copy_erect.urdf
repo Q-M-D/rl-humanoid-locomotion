@@ -1099,7 +1099,7 @@ Stephen Brawner (brawner@gmail.com)
     name="leg_r1_joint"
     type="revolute">
     <origin
-      xyz="-0.0792 -0.09002 -0.085"
+      xyz="-0.0792 -0.08998 -0.085"
       rpy="0 0 0" />
     <parent
       link="base_link" />

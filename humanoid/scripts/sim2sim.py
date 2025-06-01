@@ -35,8 +35,9 @@ from tqdm import tqdm
 from collections import deque
 from scipy.spatial.transform import Rotation as R
 from humanoid import LEGGED_GYM_ROOT_DIR
-from humanoid.envs import XBotLCfg
+from humanoid.envs import Dora2Cfg
 import torch
+from joy import setup_joystick, get_joystick_command_cpu
 
 class cmd:
     vx = 0.4
@@ -72,6 +73,10 @@ def get_obs(data):
     q = data.qpos.astype(np.double)
     dq = data.qvel.astype(np.double)
     quat = data.sensor('orientation').data[[1, 2, 3, 0]].astype(np.double)
+    
+    if np.linalg.norm(quat) < 1e-6:
+        quat = np.array([0.0, 0.0, 0.0, 1.0])  # Identity quaternion
+    
     r = R.from_quat(quat)
     v = r.apply(data.qvel[:3], inverse=True).astype(np.double)  # In the base frame
     omega = data.sensor('angular-velocity').data.astype(np.double)
@@ -122,7 +127,8 @@ def run_mujoco(policy, cfg):
     count_lowlevel = 0
 
 
-    for _ in tqdm(range(int(cfg.sim_config.sim_duration / cfg.sim_config.dt)), desc="Simulating..."):
+    # for _ in tqdm(range(int(cfg.sim_config.sim_duration / cfg.sim_config.dt)), desc="Simulating..."):
+    while viewer.is_alive:
 
         # Obtain an observation
         q, dq, quat, v, omega, gvec = get_obs(data)
@@ -131,6 +137,21 @@ def run_mujoco(policy, cfg):
 
         # 1000hz -> 100hz
         if count_lowlevel % cfg.sim_config.decimation == 0:
+            
+            if joy is not None:
+                command = get_joystick_command_cpu(joy)
+                cmd.vx = command[0]
+                cmd.vy = command[1]
+                cmd.dyaw = command[2]
+                reset = command[3]
+            
+                if reset > 0:
+                    # print("Resetting simulation")
+                    mujoco.mj_resetData(model, data)  # Reset to default state
+                    data.qvel[:] = 0.0
+                    data.time = 0.0
+                    count_lowlevel = 0
+                    continue
 
             obs = np.zeros([1, cfg.env.num_single_obs], dtype=np.float32)
             eu_ang = quaternion_to_euler_array(quat)
@@ -141,11 +162,11 @@ def run_mujoco(policy, cfg):
             obs[0, 2] = cmd.vx * cfg.normalization.obs_scales.lin_vel
             obs[0, 3] = cmd.vy * cfg.normalization.obs_scales.lin_vel
             obs[0, 4] = cmd.dyaw * cfg.normalization.obs_scales.ang_vel
-            obs[0, 5:17] = q * cfg.normalization.obs_scales.dof_pos
-            obs[0, 17:29] = dq * cfg.normalization.obs_scales.dof_vel
-            obs[0, 29:41] = action
-            obs[0, 41:44] = omega
-            obs[0, 44:47] = eu_ang
+            obs[0, 5:8] = omega
+            obs[0, 8:10] = eu_ang[:2]
+            obs[0, 10:22] = q * cfg.normalization.obs_scales.dof_pos
+            obs[0, 22:34] = dq * cfg.normalization.obs_scales.dof_vel
+            obs[0, 34:46] = action
 
             obs = np.clip(obs, -cfg.normalization.clip_observations, cfg.normalization.clip_observations)
 
@@ -184,7 +205,7 @@ if __name__ == '__main__':
     parser.add_argument('--terrain', action='store_true', help='terrain or plane')
     args = parser.parse_args()
 
-    class Sim2simCfg(XBotLCfg):
+    class Sim2simCfg(Dora2Cfg):
 
         class sim_config:
             if args.terrain:
@@ -195,19 +216,13 @@ if __name__ == '__main__':
             dt = 0.001
             decimation = 5
             
-        # class sim_config:
-        #     if args.terrain:
-        #         mujoco_model_path = f'{LEGGED_GYM_ROOT_DIR}/resources/robots/XBot/mjcf/XBot-L-terrain.xml'
-        #     else:
-        #         mujoco_model_path = f'{LEGGED_GYM_ROOT_DIR}/resources//robots/XBot/mjcf/XBot-L.xml'
-        #     sim_duration = 60.0
-        #     dt = 0.001
-        #     decimation = 10
         
         class robot_config:
             kps = np.array([80, 80, 80, 80, 10, 10, 80, 80, 80, 80, 10, 10], dtype=np.double)
             kds = np.array([4, 4, 4, 4, 0.5, 0.5, 4, 4, 4, 4, 0.5, 0.5], dtype=np.double)
             tau_limit = 200. * np.ones(12, dtype=np.double)
+    
+    joy = setup_joystick()
 
     policy = torch.jit.load(args.load_model)
     run_mujoco(policy, Sim2simCfg())

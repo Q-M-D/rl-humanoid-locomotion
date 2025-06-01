@@ -13,7 +13,7 @@ namespace legged
     // Hardware interface
     std::vector<std::string> jointNames{"leg_l1_joint", "leg_l2_joint", "leg_l3_joint","leg_l4_joint", "leg_l5_joint", "leg_l6_joint",
                                         "leg_r1_joint", "leg_r2_joint", "leg_r3_joint","leg_r4_joint", "leg_r5_joint", "leg_r6_joint",};
-    std::vector<std::string> footNames{"leg_l5_link","leg_r5_link"};
+    std::vector<std::string> footNames{"leg_l6_link","leg_r6_link"};
     actuatedDofNum_ = jointNames.size();
 
     // Load policy model and rl cfg
@@ -45,7 +45,7 @@ namespace legged
       kdl_parser::treeFromUrdfModel(urdfModel, kdlTree);
       robotStatePublisherPtr_.reset(new robot_state_publisher::RobotStatePublisher(kdlTree));
     }
-    // Topic init
+
     realJointPosPublisher_ = nh.advertise<std_msgs::Float64MultiArray>("data_analysis/real_joint_pos", 1);
     realJointVelPublisher_ = nh.advertise<std_msgs::Float64MultiArray>("data_analysis/real_joint_vel", 1);
     realTorquePublisher_ = nh.advertise<std_msgs::Float64MultiArray>("data_analysis/real_torque", 1);
@@ -57,8 +57,6 @@ namespace legged
     outputPlannedJointPosPublisher_ = nh.advertise<std_msgs::Float64MultiArray>("data_analysis/rl_planned_joint_pos", 1);
     outputPlannedJointVelPublisher_ = nh.advertise<std_msgs::Float64MultiArray>("data_analysis/rl_planned_joint_vel", 1);
     outputPlannedTorquePublisher_ = nh.advertise<std_msgs::Float64MultiArray>("data_analysis/rl_planned_torque", 1);
-
-    sensorContact_ = nh.advertise<std_msgs::Bool>("/contact_sensor_topic", 1);
 
     // Stand Lie joint // listao
     lieJointAngles_ <<  LieState.leg_l1_joint, LieState.leg_l2_joint, LieState.leg_l3_joint,LieState.leg_l4_joint, LieState.leg_l5_joint, LieState.leg_l6_joint,
@@ -260,11 +258,7 @@ namespace legged
     outputPlannedJointPosPublisher_.publish(createFloat64MultiArrayFromVector(pos_des_output_));
     outputPlannedJointVelPublisher_.publish(createFloat64MultiArrayFromVector(vel_des_output_));
     outputPlannedTorquePublisher_.publish(createFloat64MultiArrayFromVector(output_torque));
-    bool contact_state = false;
-    legged::ContactSensorHandle contact_sensor("foot_contact_sensor", &contact_state);
-    bool is_contact = contact_sensor.isContact();
-    std_msgs::Bool msg;;
-    sensorContact_.publish(msg);
+
     loopCount_++;
   }
 
@@ -333,7 +327,6 @@ namespace legged
     matrix3_t orientationCovariance, angularVelCovariance, linearAccelCovariance;
     for (size_t i = 0; i < hybridJointHandles_.size(); ++i)
     {
-      // printf("%s\n", hybridJointHandles_[i].getName().c_str());
       jointPos(i) = hybridJointHandles_[i].getPosition();
       jointVel(i) = hybridJointHandles_[i].getVelocity();
       jointTor(i) = hybridJointHandles_[i].getEffort();
@@ -369,7 +362,7 @@ namespace legged
     {
       imuEulerXyz(i) = propri_.baseEulerXyz[i];
     }
-    //Publish The data
+
     realImuAngularVelPublisher_.publish(createFloat64MultiArrayFromVector(angularVel));
     realImuLinearAccPublisher_.publish(createFloat64MultiArrayFromVector(linearAccel));
     realImuEulerXyzPulbisher.publish(createFloat64MultiArrayFromVector(imuEulerXyz));
@@ -384,12 +377,12 @@ namespace legged
     baseTransform.setRotation(tf::Quaternion(quat.coeffs()(0), quat.coeffs()(1), quat.coeffs()(2), quat.coeffs()(3)));  
     tfBroadcaster_.sendTransform(tf::StampedTransform(baseTransform, time, "world", "base_link"));
 
+
   std::map<std::string, scalar_t> jointPositions{
       {"leg_l1_joint", jointPos(0)}, {"leg_l2_joint", jointPos(1)}, {"leg_l3_joint", jointPos(2)}, 
       {"leg_l4_joint", jointPos(3)}, {"leg_l5_joint", jointPos(4)}, {"leg_l6_joint", jointPos(5)}, 
       {"leg_r1_joint", jointPos(6)}, {"leg_r2_joint", jointPos(7)}, {"leg_r3_joint", jointPos(8)}, 
       {"leg_r4_joint", jointPos(9)}, {"leg_r5_joint", jointPos(10)}, {"leg_r6_joint", jointPos(11)}};
-    // printf(jointPositions);
    robotStatePublisherPtr_->publishTransforms(jointPositions, time);
   }
 
