@@ -288,8 +288,8 @@ class Dora2Env(LeggedRobot):
         pos_target = self.ref_dof_pos.clone()
         
         # For stand mode
-        if not torch.any(self.commands[:, :3] > 0.001):
-            pos_target = torch.zeros_like(pos_target, device=self.device)
+        stand_mask = ~torch.any(self.commands[:, :3] > 0.001, dim=1)
+        pos_target[stand_mask] = 0.0
         
         diff = joint_pos - pos_target
         # 分别计算 roll 和 pitch 的误差
@@ -302,9 +302,6 @@ class Dora2Env(LeggedRobot):
         total_diff = torch.cat((roll_diff, pitch_diff, knee_diff, ankle_pitch_diff, ankle_roll_diff), dim=1)
         r = torch.exp(-2 * torch.norm(total_diff, dim=1)) - 0.2 * torch.norm(total_diff, dim=1).clamp(0, 0.5)
         #r = torch.exp(-2 * torch.norm(diff, dim=1)) - 0.2 * torch.norm(diff, dim=1).clamp(0, 0.5)
-        
-        if not torch.any(self.commands[:, :3] > 0.001):
-            r *= 3
         
         return r
 
@@ -348,23 +345,19 @@ class Dora2Env(LeggedRobot):
 
     def _reward_feet_air_time(self):
         """
-        Gives a reward of 1 if n_{c,t}=1 for any t in [t-0.2, t], where n_{c,t} represents
-        a contact state within the specified time window.
-        
-        This function checks if any foot has made contact with the ground within the last 0.2 seconds
-        and provides a reward of 1 when contact is detected within this time window.
+        Calculates the reward for feet air time, promoting longer steps. This is achieved by
+        checking the first contact with the ground after being in the air. The air time is
+        limited to a maximum value for reward calculation.
         """
-        # Current contact state
-        contact = self.contact_forces[:, self.feet_indices, 2] > 0.
-        has_single_contact_in_window = torch.mean(torch.logical_xor(self.contact_history[:, 0], self.contact_history[:, 1]).float(), dim=1)
-        
-        if not torch.any(self.commands[:, :3]) > 0.001:
-            has_single_contact_in_window = torch.ones_like(has_single_contact_in_window, dtype=torch.bool)
-        
-        reward = torch.mean(has_single_contact_in_window.float())
-        
+        contact = self.contact_forces[:, self.feet_indices, 2] > 5.
+        stance_mask = self._get_gait_phase()
+        self.contact_filt = torch.logical_or(torch.logical_or(contact, stance_mask), self.last_contacts)
         self.last_contacts = contact
-        return reward
+        first_contact = (self.feet_air_time > 0.) * self.contact_filt
+        self.feet_air_time += self.dt
+        air_time = self.feet_air_time.clamp(0, 0.5) * first_contact
+        self.feet_air_time *= ~self.contact_filt
+        return air_time.sum(dim=1)
 
     def _reward_feet_contact_number(self):
         """
@@ -373,8 +366,11 @@ class Dora2Env(LeggedRobot):
         """
         contact = self.contact_forces[:, self.feet_indices, 2] > 5.
         stance_mask = self._get_gait_phase()
+        reward = torch.where(contact == stance_mask, 1.0, -0.5) 
         
-        reward = torch.where(contact == stance_mask, 1.0, -0.5)
+        stand_mask = ~torch.any(self.commands[:, :3] > 0.001, dim=1)
+        reward[stand_mask] = 1.0  # In stand mode, reward is always 1
+        
         return torch.mean(reward, dim=1)
 
     def _reward_orientation(self):

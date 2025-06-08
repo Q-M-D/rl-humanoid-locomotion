@@ -111,7 +111,7 @@ def play(args):
             command = joy.get_joystick_command(joystick)
             env.commands[:, 0] = command[0].item()
             env.commands[:, 1] = command[1].item()
-            env.commands[:, 2] = 0.0
+            env.commands[:, 2] = command[2].item()
             env.commands[:, 3] = command[2].item()
             if command[3].item() > 0:
                 print("Resetting environment")

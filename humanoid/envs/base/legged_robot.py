@@ -407,7 +407,7 @@ class LeggedRobot(BaseTask):
         self.commands[env_ids, :2] *= (torch.norm(self.commands[env_ids, :2], dim=1) > 0.05).unsqueeze(1)
         
         # Randomly set some commands to zero (10% probability)
-        zero_mask = torch.rand(len(env_ids), device=self.device) < 0.1
+        zero_mask = torch.rand(len(env_ids), device=self.device) < 0.01
         zero_mask = zero_mask.unsqueeze(1).expand(-1, 3)  # Expand to match command dimensions
         self.commands[env_ids, :3] *= ~zero_mask
 

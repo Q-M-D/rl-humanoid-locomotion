@@ -91,3 +91,22 @@ python humanoid/scripts/train.py --task=humanoid_dora2 --run_name=v1
 ```bash
 python humanoid/scripts/play.py --task=humanoid_dora2 --run_name=v1
 ```
+
+# Real Robot Deployment
+
+You should set up the robot environment first. It includes:
+- ROS Noetic
+- Drake
+- Glog
+- etc.
+
+After that, you can run the following command simulate in Gazebo:
+```bash
+. build.sh
+. simulation.sh
+```
+
+About the real robot deployment, you can run the script in root:
+```bash
+. deploy.sh
+```

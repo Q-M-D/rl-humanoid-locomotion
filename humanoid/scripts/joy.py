@@ -50,7 +50,7 @@ def get_joystick_command_cpu(joystick):
     reset = joystick.get_button(6)  # Back button to reset
     
     # Create command vector [x_vel, y_vel, yaw_vel, height]
-    command_x = left_x * 0.6  # Forward/backward (max 0.6 m/s)
+    command_x = left_x * 1.0  # Forward/backward (max 0.6 m/s)
     command_y = left_y * 0.3   # Left/right (max 0.3 m/s)
     command_yaw = right_x * 1.5  # Rotation (max 0.3 rad/s)
     

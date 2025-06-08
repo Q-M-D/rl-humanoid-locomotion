@@ -201,10 +201,10 @@ class Dora2Cfg(LeggedRobotCfg):
         # Vers: lin_vel_x, lin_vel_y, ang_vel_yaw, heading (in heading mode ang_vel_yaw is recomputed from heading error)
         num_commands = 4
         resampling_time = 8.  # time before command are changed[s]
-        heading_command = True  # if true: compute ang vel command from heading error
+        heading_command = False  # if true: compute ang vel command from heading error
 
         class ranges:
-            lin_vel_x = [-0.3, 0.6]   # min max [m/s]
+            lin_vel_x = [-0.6, 1.0]   # min max [m/s]
             lin_vel_y = [-0.3, 0.3]   # min max [m/s]
             ang_vel_yaw = [-0.3, 0.3] # min max [rad/s]
             heading = [-3.14, 3.14]
@@ -227,9 +227,9 @@ class Dora2Cfg(LeggedRobotCfg):
         class scales:
             # reference motion tracking
             feet_clearance = 0.0
-            feet_contact_number = 0.0
+            feet_contact_number = 1.0
             # gait
-            feet_air_time = 1.0
+            feet_air_time = 2.0
             foot_slip = -0.5
             feet_distance = 0.2
             knee_distance = 0.2
@@ -252,7 +252,7 @@ class Dora2Cfg(LeggedRobotCfg):
             dof_vel = -5e-4
             dof_acc = -1e-7
             collision = -1.
-            joint_pos = 1.2
+            joint_pos = 1.6
             
     class normalization:
         class obs_scales:
